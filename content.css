@@ -1,0 +1,343 @@
+/**
+ * 即刻导航 (Act-Nav) - 侧边栏样式
+ * 极简设计，与deepseek风格保持一致
+ */
+
+/* 侧边栏容器 */
+#act-nav-sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 240px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+  transition: transform 0.3s ease;
+  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 深色模式 */
+@media (prefers-color-scheme: dark) {
+  #act-nav-sidebar {
+    background: rgba(17, 24, 39, 0.95);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    color: #d1d5db;
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* 侧边栏收起状态 */
+#act-nav-sidebar.collapsed {
+  transform: translateX(240px);
+}
+
+/* 侧边栏头部 */
+.act-nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+@media (prefers-color-scheme: dark) {
+  .act-nav-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(17, 24, 39, 0.8);
+  }
+}
+
+/* 标题 */
+.act-nav-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+@media (prefers-color-scheme: dark) {
+  .act-nav-title {
+    color: #f9fafb;
+  }
+}
+
+/* 切换按钮 */
+.act-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+.act-nav-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #374151;
+}
+
+@media (prefers-color-scheme: dark) {
+  .act-nav-toggle {
+    color: #9ca3af;
+  }
+  
+  .act-nav-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #d1d5db;
+  }
+}
+
+/* 收起状态下的切换按钮 */
+#act-nav-sidebar.collapsed .act-nav-toggle svg {
+  transform: rotate(180deg);
+}
+
+/* 内容区域 */
+.act-nav-content {
+  height: calc(100vh - 65px);
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* 滚动条样式 */
+.act-nav-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.act-nav-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.act-nav-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .act-nav-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* 问题列表 */
+.act-nav-questions {
+  padding: 0;
+}
+
+/* 问题项 */
+.act-nav-question {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.act-nav-question:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.act-nav-question.active {
+  background: rgba(59, 130, 246, 0.1);
+  border-left: 3px solid #3b82f6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .act-nav-question {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .act-nav-question:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .act-nav-question.active {
+    background: rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* 问题文本 */
+.act-nav-question-text {
+  font-size: 13px;
+  line-height: 1.4;
+  margin-bottom: 4px;
+  color: #374151;
+  word-wrap: break-word;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+@media (prefers-color-scheme: dark) {
+  .act-nav-question-text {
+    color: #d1d5db;
+  }
+}
+
+/* 问题时间 */
+.act-nav-question-time {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* 高亮效果 */
+.act-nav-highlight {
+  animation: highlight-pulse 2s ease-out;
+}
+
+@keyframes highlight-pulse {
+  0% {
+    background: rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  50% {
+    background: rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0);
+  }
+  100% {
+    background: transparent;
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  #act-nav-sidebar {
+    width: 200px;
+  }
+  
+  #act-nav-sidebar.collapsed {
+    transform: translateX(200px);
+  }
+  
+  .act-nav-header {
+    padding: 12px 16px;
+  }
+  
+  .act-nav-question {
+    padding: 10px 16px;
+  }
+  
+  .act-nav-title {
+    font-size: 14px;
+  }
+}
+
+/* 确保侧边栏在deepseek页面上的正确显示 */
+body {
+  margin-right: 0 !important;
+}
+
+/* 适配deepseek的布局 */
+.main-content, 
+.ds-container, 
+.ds-chat-container {
+  margin-right: 240px !important;
+  width: calc(100% - 240px) !important;
+  max-width: calc(100% - 240px) !important;
+  transition: margin-right 0.3s ease, width 0.3s ease, max-width 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  .main-content, 
+  .ds-container, 
+  .ds-chat-container {
+    margin-right: 200px !important;
+    width: calc(100% - 200px) !important;
+    max-width: calc(100% - 200px) !important;
+  }
+}
+
+/* 收起状态下的主内容区域 */
+#act-nav-sidebar.collapsed ~ .main-content,
+#act-nav-sidebar.collapsed ~ div .ds-container,
+#act-nav-sidebar.collapsed ~ div .ds-chat-container {
+  margin-right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 高亮用户问题 */
+div.fbb737a4.act-nav-highlight {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-left: 3px solid #3b82f6;
+  padding-left: 10px;
+  transition: background-color 0.5s ease;
+}
+
+/* 深色模式下的高亮 */
+@media (prefers-color-scheme: dark) {
+  div.fbb737a4.act-nav-highlight {
+    background-color: rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* 空状态 */
+.act-nav-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #9ca3af;
+  text-align: center;
+  padding: 20px;
+}
+
+.act-nav-empty-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.act-nav-empty-text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 加载状态 */
+.act-nav-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  color: #9ca3af;
+}
+
+.act-nav-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@media (prefers-color-scheme: dark) {
+  .act-nav-spinner {
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-top: 2px solid #3b82f6;
+  }
+}

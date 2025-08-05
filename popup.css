@@ -1,0 +1,290 @@
+/**
+ * 即刻导航 (Act-Nav) - 弹出窗口样式
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 320px;
+  min-height: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #374151;
+  background: #ffffff;
+}
+
+/* 弹出窗口容器 */
+.popup-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 头部 */
+.popup-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.popup-logo {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin-right: 12px;
+}
+
+.popup-title h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.popup-title p {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* 状态指示器 */
+.popup-status {
+  margin-bottom: 20px;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 8px;
+  color: #0369a1;
+}
+
+.status-indicator.active {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #166534;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  border-radius: 50%;
+  margin-right: 8px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.status-indicator span {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 统计信息 */
+.popup-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* 操作按钮 */
+.popup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn.primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.action-btn.primary:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.action-btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.action-btn.secondary:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.action-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 页脚 */
+.popup-footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-links a {
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 12px;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: #3b82f6;
+}
+
+.separator {
+  color: #d1d5db;
+  font-size: 12px;
+}
+
+.version {
+  font-size: 12px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 320px) {
+  .popup-container {
+    padding: 16px;
+  }
+  
+  .popup-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+  }
+  
+  .stat-number {
+    font-size: 20px;
+  }
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #111827;
+    color: #d1d5db;
+  }
+  
+  .popup-title h1 {
+    color: #f9fafb;
+  }
+  
+  .popup-title p {
+    color: #9ca3af;
+  }
+  
+  .stat-item {
+    background: #1f2937;
+    border-color: #374151;
+  }
+  
+  .action-btn.secondary {
+    background: #374151;
+    color: #d1d5db;
+    border-color: #4b5563;
+  }
+  
+  .action-btn.secondary:hover {
+    background: #4b5563;
+  }
+  
+  .popup-footer {
+    border-top-color: #374151;
+  }
+  
+  .footer-links a {
+    color: #9ca3af;
+  }
+  
+  .footer-links a:hover {
+    color: #60a5fa;
+  }
+  
+  .separator {
+    color: #4b5563;
+  }
+  
+  .version {
+    color: #6b7280;
+  }
+} 

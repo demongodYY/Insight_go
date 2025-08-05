@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "即刻导航 (Act-Nav)",
+  "version": "1.0.0",
+  "description": "为deepseek生成实时对话目录，让你瞬间定位任何历史信息，心流不再中断",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://chat.deepseek.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://chat.deepseek.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "即刻导航 - AI对话目录"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["sidebar.html", "sidebar.js", "sidebar.css"],
+      "matches": ["https://chat.deepseek.com/*"]
+    }
+  ]
+} 
