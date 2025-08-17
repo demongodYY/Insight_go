@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>可展开收藏功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 16px;
+        }
+        
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .demo-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .sidebar-simulator {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        
+        .extract-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .extract-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .knowledge-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .knowledge-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        
+        .knowledge-card:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+            line-height: 1.4;
+            flex: 1;
+            margin-right: 16px;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .collect-btn {
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.8));
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-width: 60px;
+            justify-content: center;
+        }
+        
+        .collect-btn:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05));
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+        
+        .collect-btn.is-collected {
+            border-color: #f59e0b;
+            color: #b45309;
+            background: linear-gradient(135deg, rgba(254, 243, 199, 0.9), rgba(255, 247, 237, 0.8));
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+        }
+        
+        .collect-btn.is-collected:hover {
+            background: linear-gradient(135deg, rgba(254, 243, 199, 1), rgba(255, 247, 237, 0.9));
+            border-color: #d97706;
+            color: #92400e;
+        }
+        
+        .card-body {
+            margin-bottom: 12px;
+        }
+        
+        .card-text {
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-size: 14px;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .knowledge-card.expanded .card-text {
+            display: block;
+            overflow: visible;
+            -webkit-line-clamp: initial;
+            line-clamp: initial;
+            max-height: none;
+        }
+        
+        .expand-btn {
+            display: inline-block;
+            margin: 8px 0 4px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05));
+            font-size: 13px;
+            font-weight: 500;
+            color: #3b82f6;
+            cursor: pointer;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .expand-btn:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1));
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            color: #1d4ed8;
+        }
+        
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .tag {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .collection-library {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .library-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .library-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        
+        .library-count {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .library-items {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .library-item {
+            padding: 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+        
+        .library-item:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .item-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            line-height: 1.4;
+            flex: 1;
+            margin-right: 12px;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+        
+        .locate-btn {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .locate-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: scale(1.05);
+            color: #1d4ed8;
+        }
+        
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.05);
+            color: #b91c1c;
+        }
+        
+        .action-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .item-body {
+            margin-bottom: 8px;
+        }
+        
+        .item-text {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .library-item.expanded .item-text {
+            display: block;
+            overflow: visible;
+            -webkit-line-clamp: initial;
+            line-clamp: initial;
+            max-height: none;
+        }
+        
+        .library-expand-btn {
+            display: inline-block;
+            margin: 8px 0 4px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05));
+            font-size: 13px;
+            font-weight: 500;
+            color: #3b82f6;
+            cursor: pointer;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .library-expand-btn:hover {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1));
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            color: #1d4ed8;
+        }
+        
+        .item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .test-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .test-btn:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+        
+        .test-btn.secondary {
+            background: #718096;
+        }
+        
+        .test-btn.secondary:hover {
+            background: #4a5568;
+        }
+        
+        .test-btn.danger {
+            background: #e53e3e;
+        }
+        
+        .test-btn.danger:hover {
+            background: #c53030;
+        }
+        
+        .status-info {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            color: #22543d;
+            margin-bottom: 10px;
+        }
+        
+        .status-content {
+            color: #2f855a;
+            font-size: 14px;
+        }
+        
+        .feature-list {
+            background: #ebf8ff;
+            border: 1px solid #90cdf4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature-list h3 {
+            color: #2c5282;
+            margin-bottom: 15px;
+        }
+        
+        .feature-list ul {
+            color: #2a4365;
+            line-height: 1.8;
+        }
+        
+        .feature-list li {
+            margin-bottom: 8px;
+        }
+        
+        .empty-library {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+        
+        .empty-text {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        .empty-hint {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .muted {
+            color: #9ca3af;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📖 可展开收藏功能测试</h1>
+            <p>测试新的收藏功能：完整保存AI总结内容，支持展开/收起，沿用sidebar格式</p>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🧠 侧边栏知识卡片（模拟）</h2>
+            <p>点击收藏按钮可以选择性地收藏你需要的知识卡片，内容会被完整保存</p>
+            
+            <div class="sidebar-simulator">
+                <div class="sidebar-header">
+                    <h3 class="sidebar-title">AI知识卡片</h3>
+                    <button class="extract-btn" onclick="extractKnowledgeCards()">提取知识卡片</button>
+                </div>
+                
+                <div class="knowledge-cards" id="knowledge-cards">
+                    <!-- 知识卡片将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📚 我的收藏库</h2>
+            <div class="collection-library">
+                <div class="library-header">
+                    <h3 class="library-title">收藏的知识卡片</h3>
+                    <div class="library-count" id="collection-count">0</div>
+                </div>
+                
+                <div class="library-items" id="library-items">
+                    <div class="empty-library" id="empty-library">
+                        <div class="empty-icon">📚</div>
+                        <div class="empty-text">收藏库还是空的</div>
+                        <div class="empty-hint">点击知识卡片上的收藏按钮开始收藏</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🧪 功能测试</h2>
+            <div class="test-buttons">
+                <button class="test-btn" onclick="testCollectionFlow()">测试收藏流程</button>
+                <button class="test-btn secondary" onclick="clearAllCollections()">清空所有收藏</button>
+                <button class="test-btn secondary" onclick="showCollectionData()">查看收藏数据</button>
+                <button class="test-btn danger" onclick="clearStorage()">清空存储</button>
+            </div>
+            
+            <div class="status-info" id="status-info">
+                <div class="status-title">📊 操作状态</div>
+                <div class="status-content">开始测试新的可展开收藏功能</div>
+            </div>
+        </div>
+        
+        <div class="feature-list">
+            <h3>✨ 新功能特性</h3>
+            <ul>
+                <li><strong>完整内容保存</strong>：收藏时保存AI总结的完整内容，包括所有字段</li>
+                <li><strong>展开/收起功能</strong>：支持展开全文和收起，与sidebar格式一致</li>
+                <li><strong>标签显示</strong>：显示知识卡片的标签信息</li>
+                <li><strong>格式一致</strong>：收藏库的显示格式与sidebar完全一致</li>
+                <li><strong>智能截断</strong>：长内容自动截断，点击展开查看完整内容</li>
+                <li><strong>状态保持</strong>：展开状态在收藏库中保持</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // 模拟知识卡片数据（包含长内容用于测试展开功能）
+        const mockKnowledgeCards = [
+            {
+                id: 'card-1',
+                title: 'JavaScript闭包概念详解',
+                content: '闭包是JavaScript中一个非常重要的概念，它允许函数访问其词法作用域之外的变量。当一个函数在另一个函数内部定义时，内部函数可以访问外部函数的变量，即使外部函数已经执行完毕。闭包的主要特点包括：1. 函数可以访问其定义时所在的词法作用域；2. 即使函数在其原始作用域之外执行，仍然可以访问该作用域中的变量；3. 闭包可以用于创建私有变量和方法；4. 闭包在事件处理、模块模式、柯里化等场景中非常有用。理解闭包对于掌握JavaScript的高级特性至关重要。',
+                tags: ['JavaScript', '闭包', '作用域', '函数式编程'],
+                source: 'deepseek',
+                is_collected: false,
+                hasExpandableContent: true
+            },
+            {
+                id: 'card-2',
+                title: 'React Hooks最佳实践指南',
+                content: 'React Hooks提供了一种在函数组件中使用状态和其他React特性的方式。使用Hooks时，需要遵循一些重要的最佳实践：1. 不要在循环、条件或嵌套函数中调用Hooks；2. 只在React函数组件或自定义Hooks中调用Hooks；3. 使用useEffect时要注意依赖数组的设置；4. 使用useCallback和useMemo来优化性能；5. 自定义Hooks应该以"use"开头命名；6. 合理使用useReducer来管理复杂状态；7. 注意useEffect的清理函数，避免内存泄漏。遵循这些最佳实践可以让你的React应用更加稳定和高效。',
+                tags: ['React', 'Hooks', '最佳实践', '性能优化'],
+                source: 'deepseek',
+                is_collected: false,
+                hasExpandableContent: true
+            },
+            {
+                id: 'card-3',
+                title: 'CSS Grid布局系统完整教程',
+                content: 'CSS Grid是一个强大的二维布局系统，可以同时处理行和列。它提供了精确控制元素位置和大小的能力，是现代Web布局的重要工具。Grid布局的主要特性包括：1. 二维布局：可以同时控制行和列；2. 灵活的网格线：可以创建复杂的网格结构；3. 自动布局：Grid可以自动计算和分配空间；4. 响应式设计：Grid非常适合创建响应式布局；5. 对齐控制：提供了强大的对齐和分布功能；6. 嵌套支持：Grid容器可以嵌套使用。Grid布局特别适合创建复杂的页面布局、仪表板、图片画廊等。',
+                tags: ['CSS', 'Grid', '布局', '响应式设计'],
+                source: 'deepseek',
+                is_collected: false,
+                hasExpandableContent: true
+            },
+            {
+                id: 'card-4',
+                title: 'TypeScript类型系统深入理解',
+                content: 'TypeScript的类型系统为JavaScript添加了静态类型检查，可以在编译时发现潜在错误。它支持多种高级类型特性：1. 基础类型：string、number、boolean、array、tuple等；2. 联合类型和交叉类型：可以组合多个类型；3. 泛型：可以创建可重用的类型组件；4. 接口和类型别名：定义对象的结构；5. 高级类型：条件类型、映射类型、模板字面量类型等；6. 装饰器：可以修改类、方法、属性等的行为；7. 命名空间和模块：组织代码结构。TypeScript的类型系统让JavaScript开发更加安全和可维护。',
+                tags: ['TypeScript', '类型系统', '静态检查', '高级类型'],
+                source: 'deepseek',
+                is_collected: false,
+                hasExpandableContent: true
+            }
+        ];
+        
+        // 模拟收藏数据存储
+        let collectionData = [];
+        
+        // 初始化页面
+        function initPage() {
+            updateStatus('🚀 页面已加载，可以开始测试新的可展开收藏功能');
+            extractKnowledgeCards();
+            updateCollectionCount();
+            renderCollectionLibrary();
+        }
+        
+        // 提取知识卡片
+        function extractKnowledgeCards() {
+            const cardsContainer = document.getElementById('knowledge-cards');
+            const html = mockKnowledgeCards.map(card => `
+                <div class="knowledge-card" data-id="${card.id}" data-expanded="0">
+                    <div class="card-header">
+                        <div class="card-title">${card.title}</div>
+                        <div class="card-actions">
+                            <button class="collect-btn ${card.is_collected ? 'is-collected' : ''}" 
+                                    onclick="toggleCollection('${card.id}')" 
+                                    title="${card.is_collected ? '取消收藏' : '收藏此知识卡片'}">
+                                ${card.is_collected ? '★ 已收藏' : '☆ 收藏'}
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-text">${getTruncatedContent(card)}</div>
+                        ${card.hasExpandableContent ? `<button class="expand-btn" onclick="toggleCardExpand('${card.id}')">展开全文</button>` : ''}
+                        <div class="card-tags">
+                            ${card.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            cardsContainer.innerHTML = html;
+            updateStatus('✅ 知识卡片已提取，可以开始收藏');
+        }
+        
+        // 切换知识卡片展开状态
+        function toggleCardExpand(cardId) {
+            const cardElement = document.querySelector(`[data-id="${cardId}"]`);
+            const expandBtn = cardElement.querySelector('.expand-btn');
+            const textElement = cardElement.querySelector('.card-text');
+            const card = mockKnowledgeCards.find(c => c.id === cardId);
+            
+            if (!cardElement || !expandBtn || !textElement || !card) return;
+            
+            const isExpanded = cardElement.dataset.expanded === '1';
+            const newState = isExpanded ? '0' : '1';
+            
+            // 设置新的展开状态
+            cardElement.dataset.expanded = newState;
+            
+            if (newState === '1') {
+                // 展开：显示完整内容
+                textElement.textContent = card.content;
+                expandBtn.textContent = '收起';
+                cardElement.classList.add('expanded');
+            } else {
+                // 收起：显示截断内容
+                textElement.textContent = getTruncatedContent(card);
+                expandBtn.textContent = '展开全文';
+                cardElement.classList.remove('expanded');
+            }
+        }
+        
+        // 获取截断内容
+        function getTruncatedContent(card) {
+            const content = card.content;
+            if (content.length <= 80) return content;
+            return content.substring(0, 80) + '...';
+        }
+        
+        // 切换收藏状态
+        function toggleCollection(cardId) {
+            const card = mockKnowledgeCards.find(c => c.id === cardId);
+            if (!card) return;
+            
+            const cardElement = document.querySelector(`[data-id="${cardId}"]`);
+            const collectBtn = cardElement.querySelector('.collect-btn');
+            const wasCollected = card.is_collected;
+            
+            // 更新收藏状态
+            card.is_collected = !wasCollected;
+            
+            // 更新按钮状态
+            collectBtn.textContent = card.is_collected ? '★ 已收藏' : '☆ 收藏';
+            collectBtn.classList.toggle('is-collected', card.is_collected);
+            collectBtn.title = card.is_collected ? '取消收藏' : '收藏此知识卡片';
+            
+            // 更新收藏数据
+            if (card.is_collected) {
+                addToCollection(card);
+                updateStatus(`✅ 已收藏: ${card.title}`);
+            } else {
+                removeFromCollection(cardId);
+                updateStatus(`❌ 已取消收藏: ${card.title}`);
+            }
+            
+            // 更新界面
+            updateCollectionCount();
+            renderCollectionLibrary();
+        }
+        
+        // 添加到收藏
+        function addToCollection(card) {
+            const collectionItem = {
+                ...card,
+                localId: Date.now().toString(),
+                addedToLibrary: new Date().toISOString(),
+                // 保存原始字段，用于展开功能
+                originalAnswer: card.content,
+                originalSummary: card.content,
+                originalContent: card.content,
+                originalDetails: card.content,
+                originalLogic: card.content,
+                originalText: card.content,
+                hasExpandableContent: card.hasExpandableContent
+            };
+            
+            // 检查是否已经存在
+            const existingIndex = collectionData.findIndex(item => item.id === card.id);
+            if (existingIndex === -1) {
+                collectionData.push(collectionItem);
+                console.log('新卡片已添加到收藏:', card.title);
+            } else {
+                collectionData[existingIndex] = collectionItem;
+                console.log('现有卡片已更新:', card.title);
+            }
+            
+            // 保存到本地存储（模拟）
+            saveToLocalStorage();
+        }
+        
+        // 从收藏中移除
+        function removeFromCollection(cardId) {
+            collectionData = collectionData.filter(item => item.id !== cardId);
+            console.log('卡片已从收藏中移除:', cardId);
+            
+            // 保存到本地存储（模拟）
+            saveToLocalStorage();
+        }
+        
+        // 保存到本地存储（模拟）
+        function saveToLocalStorage() {
+            try {
+                // 模拟Chrome存储
+                if (window.chrome && chrome.storage) {
+                    chrome.storage.local.set({ 'act-nav-local-library': collectionData });
+                }
+                
+                // 模拟localStorage
+                localStorage.setItem('act-nav-local-library', JSON.stringify(collectionData));
+                
+                console.log('收藏数据已保存到本地存储，当前共有', collectionData.length, '项收藏');
+            } catch (error) {
+                console.error('保存到本地存储失败:', error);
+            }
+        }
+        
+        // 更新收藏数量
+        function updateCollectionCount() {
+            const countElement = document.getElementById('collection-count');
+            countElement.textContent = collectionData.length;
+        }
+        
+        // 渲染收藏库
+        function renderCollectionLibrary() {
+            const libraryItems = document.getElementById('library-items');
+            const emptyLibrary = document.getElementById('empty-library');
+            
+            if (collectionData.length === 0) {
+                emptyLibrary.style.display = 'block';
+                return;
+            }
+            
+            emptyLibrary.style.display = 'none';
+            
+            const html = collectionData.map(item => `
+                <div class="library-item" data-id="${item.id}" data-expanded="0">
+                    <div class="item-header">
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-actions">
+                            <button class="action-btn locate-btn" title="定位到对话位置" onclick="locateToConversation('${item.id}')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                    <circle cx="12" cy="10" r="3"/>
+                                </svg>
+                            </button>
+                            <button class="action-btn delete-btn" title="删除此收藏" onclick="deleteCollectionItem('${item.id}')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="item-body">
+                        <div class="item-text">${getTruncatedContent(item)}</div>
+                        ${item.hasExpandableContent ? `<button class="library-expand-btn" onclick="toggleLibraryItemExpand('${item.id}')">展开全文</button>` : ''}
+                        <div class="item-tags">
+                            ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="item-meta">
+                        <span>${item.source}</span>
+                        <span>${item.addedToLibrary ? new Date(item.addedToLibrary).toLocaleDateString() : '未知时间'}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            libraryItems.innerHTML = html;
+        }
+        
+        // 切换收藏项展开状态
+        function toggleLibraryItemExpand(itemId) {
+            const itemElement = document.querySelector(`.library-item[data-id="${itemId}"]`);
+            const expandBtn = itemElement.querySelector('.library-expand-btn');
+            const textElement = itemElement.querySelector('.item-text');
+            const item = collectionData.find(c => c.id === itemId);
+            
+            if (!itemElement || !expandBtn || !textElement || !item) return;
+            
+            const isExpanded = itemElement.dataset.expanded === '1';
+            const newState = isExpanded ? '0' : '1';
+            
+            // 设置新的展开状态
+            itemElement.dataset.expanded = newState;
+            
+            if (newState === '1') {
+                // 展开：显示完整内容
+                textElement.textContent = item.content;
+                expandBtn.textContent = '收起';
+                itemElement.classList.add('expanded');
+            } else {
+                // 收起：显示截断内容
+                textElement.textContent = getTruncatedContent(item);
+                expandBtn.textContent = '展开全文';
+                itemElement.classList.remove('expanded');
+            }
+            
+            console.log('收藏项展开状态切换:', item.title, newState === '1' ? '展开' : '收起');
+        }
+        
+        // 删除收藏项
+        function deleteCollectionItem(itemId) {
+            const item = collectionData.find(item => item.id === itemId);
+            if (!item) return;
+            
+            if (confirm(`确定要删除"${item.title}"吗？\n\n删除后无法恢复。`)) {
+                // 从收藏数据中移除
+                removeFromCollection(itemId);
+                
+                // 更新知识卡片的收藏状态
+                const card = mockKnowledgeCards.find(c => c.id === itemId);
+                if (card) {
+                    card.is_collected = false;
+                }
+                
+                // 更新按钮状态
+                const cardElement = document.querySelector(`[data-id="${itemId}"]`);
+                if (cardElement) {
+                    const collectBtn = cardElement.querySelector('.collect-btn');
+                    collectBtn.textContent = '☆ 收藏';
+                    collectBtn.classList.remove('is-collected');
+                    collectBtn.title = '收藏此知识卡片';
+                }
+                
+                // 重新渲染收藏库
+                updateCollectionCount();
+                renderCollectionLibrary();
+                
+                updateStatus(`🗑️ 已删除收藏: ${item.title}`);
+            }
+        }
+        
+        // 定位到对话位置（模拟）
+        function locateToConversation(itemId) {
+            const item = collectionData.find(item => item.id === itemId);
+            if (item) {
+                updateStatus(`🎯 正在定位到: ${item.title}...`);
+                setTimeout(() => {
+                    updateStatus(`✅ 已定位到: ${item.title}`);
+                }, 1000);
+            }
+        }
+        
+        // 测试收藏流程
+        function testCollectionFlow() {
+            updateStatus('🧪 开始测试收藏流程...');
+            
+            // 模拟收藏几个卡片
+            setTimeout(() => {
+                toggleCollection('card-1');
+            }, 500);
+            
+            setTimeout(() => {
+                toggleCollection('card-3');
+            }, 1500);
+            
+            setTimeout(() => {
+                updateStatus('✅ 收藏流程测试完成！现在可以测试展开功能');
+            }, 3000);
+        }
+        
+        // 清空所有收藏
+        function clearAllCollections() {
+            if (confirm('确定要清空所有收藏吗？\n\n此操作无法撤销。')) {
+                collectionData = [];
+                
+                // 重置所有知识卡片的收藏状态
+                mockKnowledgeCards.forEach(card => {
+                    card.is_collected = false;
+                });
+                
+                // 更新所有按钮状态
+                document.querySelectorAll('.collect-btn').forEach(btn => {
+                    btn.textContent = '☆ 收藏';
+                    btn.classList.remove('is-collected');
+                    btn.title = '收藏此知识卡片';
+                });
+                
+                updateCollectionCount();
+                renderCollectionLibrary();
+                updateStatus('🗑️ 已清空所有收藏');
+                
+                // 清空存储
+                saveToLocalStorage();
+            }
+        }
+        
+        // 显示收藏数据
+        function showCollectionData() {
+            console.log('当前收藏数据:', collectionData);
+            updateStatus(`📊 收藏数据已输出到控制台，共 ${collectionData.length} 项`);
+        }
+        
+        // 清空存储
+        function clearStorage() {
+            if (confirm('确定要清空所有存储数据吗？\n\n此操作无法撤销。')) {
+                try {
+                    // 清空localStorage
+                    localStorage.removeItem('act-nav-local-library');
+                    
+                    // 清空Chrome存储（如果可用）
+                    if (window.chrome && chrome.storage) {
+                        chrome.storage.local.remove(['act-nav-local-library']);
+                    }
+                    
+                    // 清空内存数据
+                    collectionData = [];
+                    
+                    updateCollectionCount();
+                    renderCollectionLibrary();
+                    updateStatus('🗑️ 已清空所有存储数据');
+                    
+                } catch (error) {
+                    console.error('清空存储失败:', error);
+                    updateStatus('❌ 清空存储失败: ' + error.message);
+                }
+            }
+        }
+        
+        // 更新状态
+        function updateStatus(message, type = 'info') {
+            const statusElement = document.getElementById('status-info');
+            const contentElement = statusElement.querySelector('.status-content');
+            contentElement.textContent = message;
+            
+            // 根据类型更新样式
+            statusElement.className = 'status-info';
+            if (type === 'error') {
+                statusElement.style.background = '#fef2f2';
+                statusElement.style.borderColor = '#fecaca';
+                contentElement.style.color = '#dc2626';
+            } else if (type === 'success') {
+                statusElement.style.background = '#f0fff4';
+                statusElement.style.borderColor = '#9ae6b4';
+                contentElement.style.color = '#2f855a';
+            } else if (type === 'warning') {
+                statusElement.style.background = '#fffbeb';
+                statusElement.style.borderColor = '#fed7aa';
+                contentElement.style.color = '#d97706';
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>

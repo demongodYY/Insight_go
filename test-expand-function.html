@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>展开功能测试</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .act-nav-card {
+            background: #fff;
+            border: 1px solid #ebedf0;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+        }
+        
+        .act-nav-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        
+        .act-nav-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            line-height: 1.4;
+        }
+        
+        .act-nav-card-body {
+            font-size: 13px;
+            color: #4b5563;
+            line-height: 1.55;
+        }
+        
+        /* 卡片正文默认 4 行省略 */
+        .act-nav-card-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #4b5563;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+        }
+        
+        /* 展开状态：不截断 */
+        .act-nav-card[data-expanded="1"] .act-nav-card-text {
+            display: block;
+            overflow: visible;
+            -webkit-line-clamp: unset;
+            line-clamp: unset;
+        }
+        
+        /* 展开/收起按钮 */
+        .act-nav-expand-btn {
+            display: inline-block;
+            margin: 8px 0 4px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: #e5e7eb;
+            font-size: 13px;
+            color: #111827;
+            cursor: pointer;
+            border: 0;
+        }
+        
+        .act-nav-expand-btn:hover {
+            background: #d1d5db;
+        }
+        
+        .debug-info {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>展开功能测试</h1>
+        <p>这个页面用于测试知识卡片的展开/收起功能是否正常工作。</p>
+        
+        <div class="debug-info">
+            <strong>调试信息：</strong><br>
+            - 卡片1: data-expanded="0" (默认收起)<br>
+            - 卡片2: data-expanded="1" (默认展开)<br>
+            - 点击按钮可以切换状态
+        </div>
+        
+        <!-- 测试卡片1：默认收起状态 -->
+        <div class="act-nav-card" data-expanded="0">
+            <div class="act-nav-card-header">
+                <div class="act-nav-card-title">测试卡片1 - 默认收起</div>
+            </div>
+            <div class="act-nav-card-body">
+                <div class="act-nav-card-text">
+                    这是一段很长的文本内容，用来测试展开功能是否正常工作。这段文本应该超过4行，这样就能看到省略号的效果。当点击"展开全文"按钮时，文本应该完整显示，不再被截断。这是一个非常重要的功能，让用户可以在有限的空间内快速浏览卡片概要，需要时再展开查看完整内容。
+                    
+                    第二段内容继续测试展开功能。这里应该能看到更多的文本内容，确保展开功能能够正确处理长文本。如果功能正常工作，用户应该能够通过点击按钮来切换文本的显示状态。
+                    
+                    第三段内容用于进一步测试。这段内容应该足够长，能够触发展开按钮的显示，并且能够验证CSS样式是否正确应用。
+                </div>
+                <button class="act-nav-expand-btn" onclick="toggleExpand(this)">展开全文</button>
+            </div>
+        </div>
+        
+        <!-- 测试卡片2：默认展开状态 -->
+        <div class="act-nav-card" data-expanded="1">
+            <div class="act-nav-card-header">
+                <div class="act-nav-card-title">测试卡片2 - 默认展开</div>
+            </div>
+            <div class="act-nav-card-body">
+                <div class="act-nav-card-text">
+                    这是第二张测试卡片，默认状态是展开的。这张卡片用来验证CSS选择器是否正确工作。当data-expanded="1"时，文本应该完整显示，没有省略号。
+                    
+                    如果CSS选择器工作正常，这段文本应该能够完整显示，不会被截断到4行。这是验证展开功能的关键测试点。
+                    
+                    第三段内容继续测试，确保展开状态下的显示效果符合预期。用户应该能够看到完整的文本内容，并且可以通过点击按钮来收起文本。
+                </div>
+                <button class="act-nav-expand-btn" onclick="toggleExpand(this)">收起</button>
+            </div>
+        </div>
+        
+        <div class="debug-info">
+            <strong>测试步骤：</strong><br>
+            1. 观察卡片1是否显示省略号（默认收起）<br>
+            2. 观察卡片2是否完整显示（默认展开）<br>
+            3. 点击卡片1的"展开全文"按钮，看是否展开<br>
+            4. 点击卡片2的"收起"按钮，看是否收起<br>
+            5. 检查按钮文字是否正确变化
+        </div>
+    </div>
+    
+    <script>
+        function toggleExpand(btn) {
+            const cardEl = btn.closest('.act-nav-card');
+            const expanded = cardEl.getAttribute('data-expanded') === '1';
+            
+            // 切换状态
+            cardEl.setAttribute('data-expanded', expanded ? '0' : '1');
+            
+            // 更新按钮文字
+            btn.textContent = expanded ? '展开全文' : '收起';
+            
+            // 输出调试信息
+            console.log('切换展开状态:', {
+                cardId: cardEl.querySelector('.act-nav-card-title').textContent,
+                oldState: expanded ? '展开' : '收起',
+                newState: expanded ? '收起' : '展开',
+                dataExpanded: cardEl.getAttribute('data-expanded')
+            });
+        }
+        
+        // 页面加载时输出调试信息
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('页面加载完成，开始测试展开功能');
+            
+            document.querySelectorAll('.act-nav-card').forEach((card, index) => {
+                const expanded = card.getAttribute('data-expanded');
+                const title = card.querySelector('.act-nav-card-title').textContent;
+                console.log(`卡片${index + 1}: ${title}, data-expanded="${expanded}"`);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -3,16 +3,26 @@
   "name": "即刻导航 (Act-Nav)",
   "version": "1.0.0",
   "description": "为deepseek生成实时对话目录，让你瞬间定位任何历史信息，心流不再中断",
-  "permissions": [
-    "storage",
-    "activeTab"
-  ],
+  "permissions": ["storage", "activeTab", "tabs","scripting"],
+  
+  "background": { "service_worker": "background.js" },
+  
   "host_permissions": [
-    "https://chat.deepseek.com/*"
+    "https://chat.deepseek.com/*",
+    "https://www.kimi.com/*",
+    "https://chat.openai.com/*",
+    "https://www.doubao.com/*",
+    "https://*.supabase.co/*",
+    "https://xknppgsrflvontwzajhf.supabase.co/*"
   ],
   "content_scripts": [
     {
-      "matches": ["https://chat.deepseek.com/*"],
+      "matches": [
+        "https://chat.deepseek.com/*",
+        "https://www.kimi.com/*",
+        "https://chat.openai.com/*",
+        "https://www.doubao.com/*"
+      ],
       "js": ["content.js"],
       "css": ["content.css"],
       "run_at": "document_end"
@@ -22,6 +32,7 @@
     "default_popup": "popup.html",
     "default_title": "即刻导航 - AI对话目录"
   },
+  "options_page": "ui/options.html",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
@@ -30,7 +41,12 @@
   "web_accessible_resources": [
     {
       "resources": ["sidebar.html", "sidebar.js", "sidebar.css"],
-      "matches": ["https://chat.deepseek.com/*"]
+      "matches": [
+        "https://chat.deepseek.com/*",
+        "https://www.kimi.com/*",
+        "https://chat.openai.com/*",
+        "https://www.doubao.com/*"
+      ]
     }
   ]
-} 
+}

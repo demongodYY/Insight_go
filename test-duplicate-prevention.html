@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>重复问题预防测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .test-button:hover {
+      background: #0056b3;
+    }
+    .test-button.success {
+      background: #28a745;
+    }
+    .test-button.success:hover {
+      background: #218838;
+    }
+    .test-button.warning {
+      background: #ffc107;
+      color: #212529;
+    }
+    .test-button.warning:hover {
+      background: #e0a800;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+      background: #e9ecef;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .status.warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    .log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .question-list {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .question-item {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 5px 0;
+      font-size: 12px;
+    }
+    .question-id {
+      color: #6c757d;
+      font-weight: bold;
+    }
+    .question-text {
+      color: #495057;
+      margin: 5px 0;
+    }
+    .question-time {
+      color: #6c757d;
+      font-size: 10px;
+    }
+    .input-area {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .input-box {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .submit-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>重复问题预防测试</h1>
+  
+  <div class="test-section">
+    <h2>测试说明</h2>
+    <p>这个页面用于测试插件的重复问题预防功能。现在插件应该能够：</p>
+    <ol>
+      <li>记录每个问题（包括重复内容）</li>
+      <li>避免同一个问题被重复提取</li>
+      <li>在对话切换时正确重置状态</li>
+    </ol>
+  </div>
+  
+  <div class="test-section">
+    <h2>模拟问题输入</h2>
+    <div class="input-area">
+      <textarea class="input-box" id="questionInput" placeholder="请输入您的问题..."></textarea>
+      <button class="submit-btn" onclick="submitQuestion()">提交问题</button>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作按钮</h2>
+    <button class="test-button" onclick="simulateDOMChange()">模拟DOM变化</button>
+    <button class="test-button" onclick="simulateChatSwitch()">模拟对话切换</button>
+    <button class="test-button" onclick="addSameQuestion()">添加相同问题</button>
+    <button class="test-button" onclick="checkQuestions()">检查问题列表</button>
+    <button class="test-button" onclick="clearQuestions()">清空问题列表</button>
+    <button class="test-button" onclick="clearLog()">清空日志</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>当前状态</h2>
+    <div id="status" class="status">等待操作...</div>
+  </div>
+  
+  <div class="test-section">
+    <h2>问题列表</h2>
+    <div id="question-list" class="question-list">
+      <p>暂无问题</p>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作日志</div>
+    <div id="log" class="log"></div>
+  </div>
+  
+  <script>
+    // 模拟插件的问题管理
+    let questions = [];
+    let questionCounter = 1;
+    let pendingQuestionText = null;
+    let pendingQuestionTimestamp = null;
+    
+    // 日志函数
+    function log(message, type = 'info') {
+      const logElement = document.getElementById('log');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.innerHTML = `[${timestamp}] ${message}`;
+      logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#6c757d';
+      logElement.appendChild(logEntry);
+      logElement.scrollTop = logElement.scrollHeight;
+      console.log(`[${timestamp}] ${message}`);
+    }
+    
+    // 更新状态显示
+    function updateStatus(message, type = 'info') {
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = message;
+      statusElement.className = `status ${type}`;
+    }
+    
+    // 生成问题ID
+    function generateQuestionId() {
+      const timestamp = Date.now();
+      const randomPart = Math.random().toString(36).substr(2, 9);
+      return `act-nav-${timestamp}-${randomPart}`;
+    }
+    
+    // 截断文本
+    function truncateText(text, maxLength) {
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
+    }
+    
+    // 提交问题（模拟handleQuestionSubmit）
+    function submitQuestion() {
+      const inputBox = document.getElementById('questionInput');
+      const questionText = inputBox.value.trim();
+      
+      if (!questionText) {
+        log('请输入问题内容', 'warning');
+        return;
+      }
+      
+      log(`准备添加新问题: ${questionText}`);
+      
+      // 设置待处理标记，防止重复处理
+      pendingQuestionText = questionText;
+      pendingQuestionTimestamp = Date.now();
+      
+      // 模拟延迟处理
+      setTimeout(() => {
+        addQuestion(questionText);
+        
+        // 清除待处理标记
+        pendingQuestionText = null;
+        pendingQuestionTimestamp = null;
+        
+        // 清空输入框
+        inputBox.value = '';
+      }, 100);
+    }
+    
+    // 模拟DOM变化（模拟processUserMessage）
+    function simulateDOMChange() {
+      const questionText = "这是通过DOM变化检测到的问题";
+      
+      // 检查是否已经有待处理的问题，避免重复处理
+      if (pendingQuestionText && pendingQuestionTimestamp) {
+        const timeDiff = Date.now() - pendingQuestionTimestamp;
+        const textMatch = pendingQuestionText.trim() === questionText.trim();
+        
+        // 如果时间差小于2秒且文本匹配，说明这是同一个问题，跳过处理
+        if (timeDiff < 2000 && textMatch) {
+          log(`跳过重复处理的问题: ${questionText} (已有待处理的问题)`, 'warning');
+          return;
+        }
+      }
+      
+      log(`准备处理用户消息: ${questionText.substring(0, 50)}...`);
+      addQuestion(questionText);
+    }
+    
+    // 模拟对话切换
+    function simulateChatSwitch() {
+      log('模拟对话切换...', 'warning');
+      
+      // 保存当前问题到会话存储
+      if (questions.length > 0) {
+        const sessionKey = 'act-nav-session-questions-old-chat';
+        const questionsData = questions.map(q => ({
+          id: q.id,
+          text: q.text,
+          fullText: q.fullText,
+          timestamp: q.timestamp,
+          chatId: 'old-chat'
+        }));
+        
+        sessionStorage.setItem(sessionKey, JSON.stringify(questionsData));
+        log(`保存旧对话的 ${questions.length} 个问题到会话存储`, 'success');
+      }
+      
+      // 清空问题列表
+      questions = [];
+      
+      // 重置防止重复处理的标记
+      pendingQuestionText = null;
+      pendingQuestionTimestamp = null;
+      log('对话切换时已重置重复处理标记', 'success');
+      
+      // 更新显示
+      updateQuestionList();
+      updateStatus('对话已切换，问题列表已清空', 'success');
+    }
+    
+    // 添加相同内容的问题
+    function addSameQuestion() {
+      const questionText = "这是相同内容的问题";
+      
+      log(`准备添加相同问题: ${questionText}`);
+      addQuestion(questionText);
+    }
+    
+    // 添加问题到列表
+    function addQuestion(text) {
+      const question = {
+        id: generateQuestionId(),
+        text: truncateText(text, 50),
+        fullText: text,
+        timestamp: Date.now(),
+        chatId: 'test-chat'
+      };
+      
+      questions.push(question);
+      
+      log(`问题已添加到目录: ${question.id}`, 'success');
+      updateStatus(`已添加第 ${questions.length} 个问题`, 'success');
+      
+      updateQuestionList();
+    }
+    
+    // 检查问题列表
+    function checkQuestions() {
+      log(`检查问题列表，当前共有 ${questions.length} 个问题`);
+      
+      if (questions.length === 0) {
+        log('问题列表为空');
+        return;
+      }
+      
+      // 检查是否有重复内容的问题
+      const contentMap = new Map();
+      let duplicateCount = 0;
+      
+      questions.forEach((q, index) => {
+        if (contentMap.has(q.fullText)) {
+          duplicateCount++;
+          log(`发现重复内容问题: 索引 ${index} 和 ${contentMap.get(q.fullText)} 内容相同`);
+        } else {
+          contentMap.set(q.fullText, index);
+        }
+      });
+      
+      if (duplicateCount > 0) {
+        log(`共发现 ${duplicateCount} 个重复内容的问题`, 'success');
+        updateStatus(`发现 ${duplicateCount} 个重复内容的问题，验证了重复记录功能`, 'success');
+      } else {
+        log('没有发现重复内容的问题');
+        updateStatus('没有发现重复内容的问题', 'info');
+      }
+    }
+    
+    // 清空问题列表
+    function clearQuestions() {
+      questions = [];
+      questionCounter = 1;
+      
+      // 重置防止重复处理的标记
+      pendingQuestionText = null;
+      pendingQuestionTimestamp = null;
+      
+      log('问题列表已清空，重复处理标记已重置', 'success');
+      updateStatus('问题列表已清空', 'success');
+      updateQuestionList();
+    }
+    
+    // 更新问题列表显示
+    function updateQuestionList() {
+      const questionListElement = document.getElementById('question-list');
+      
+      if (questions.length === 0) {
+        questionListElement.innerHTML = '<p>暂无问题</p>';
+        return;
+      }
+      
+      questionListElement.innerHTML = questions.map((q, index) => `
+        <div class="question-item">
+          <div class="question-id">#${index + 1} - ${q.id}</div>
+          <div class="question-text">${q.text}</div>
+          <div class="question-time">${new Date(q.timestamp).toLocaleTimeString()}</div>
+        </div>
+      `).join('');
+    }
+    
+    // 清空日志
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+      log('日志已清空');
+    }
+    
+    // 页面加载时初始化
+    window.addEventListener('load', () => {
+      log('页面加载完成，开始测试重复问题预防功能');
+      updateStatus('准备测试重复问题预防功能', 'info');
+    });
+    
+    // 页面卸载前保存状态
+    window.addEventListener('beforeunload', () => {
+      log('页面即将卸载');
+    });
+  </script>
+</body>
+</html>

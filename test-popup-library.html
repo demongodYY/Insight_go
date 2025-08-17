@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹窗收藏功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 800px;
+            text-align: center;
+        }
+        
+        .test-title {
+            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-description {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .popup-preview {
+            width: 320px;
+            min-height: 500px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            margin: 0 auto;
+        }
+        
+        .popup-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        /* 头部 */
+        .popup-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .popup-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 12px;
+        }
+        
+        .popup-title h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+        
+        .popup-title p {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        /* 状态指示器 */
+        .popup-status {
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            color: #0369a1;
+        }
+        
+        .status-indicator.active {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-indicator span {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        /* 统计信息 */
+        .popup-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        /* 操作按钮 */
+        .popup-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn.primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .action-btn.secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        
+        .action-btn.library-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+        
+        .action-btn.library-btn:hover {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        .library-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #fbbf24;
+            color: #92400e;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 12px;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-3px); }
+            60% { transform: translateY(-1px); }
+        }
+        
+        /* 收藏内容区域样式 */
+        .library-content {
+            margin-top: 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            border-radius: 16px;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(10px);
+        }
+        
+        .library-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.05));
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+        
+        .library-header h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .close-library-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border: none;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            color: #dc2626;
+            transition: all 0.2s ease;
+        }
+        
+        .close-library-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .library-list {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 0;
+        }
+        
+        .library-loading {
+            padding: 40px 20px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        .library-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.08);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .library-item:hover {
+            background: rgba(59, 130, 246, 0.03);
+        }
+        
+        .library-item:last-child {
+            border-bottom: none;
+        }
+        
+        .library-item-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+        
+        .library-item-content {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+        }
+        
+        .library-item-meta {
+            font-size: 11px;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .library-item-date {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .library-item-date svg {
+            width: 12px;
+            height: 12px;
+        }
+        
+        .library-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #9ca3af;
+        }
+        
+        .library-empty-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+        
+        .library-empty-text {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .library-empty-hint {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        /* 页脚 */
+        .popup-footer {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #3b82f6;
+        }
+        
+        .separator {
+            color: #d1d5db;
+            font-size: 12px;
+        }
+        
+        .version {
+            font-size: 12px;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+        
+        .demo-buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .demo-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .demo-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .demo-btn.active {
+            background: rgba(59, 130, 246, 0.8);
+            border-color: rgba(59, 130, 246, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">🎯 弹窗收藏功能演示</h1>
+        <p class="test-description">
+            现在"我的收藏"按钮点击后会在弹窗中直接显示收藏内容，而不是跳转到options页面。<br>
+            点击下面的按钮来体验不同的状态。
+        </p>
+        
+        <div class="popup-preview">
+            <div class="popup-container">
+                <div class="popup-header">
+                    <div class="popup-logo">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12h18M3 6h18M3 18h18"/>
+                        </svg>
+                    </div>
+                    <div class="popup-title">
+                        <h1>即刻导航</h1>
+                        <p>AI对话目录</p>
+                    </div>
+                </div>
+                
+                <div class="popup-status">
+                    <div class="status-indicator active">
+                        <div class="status-dot"></div>
+                        <span>已在当前页面激活</span>
+                    </div>
+                </div>
+                
+                <div class="popup-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">12</div>
+                        <div class="stat-label">对话问题</div>
+                    </div>
+                </div>
+                
+                <div class="popup-actions">
+                    <button class="action-btn primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12h18M3 6h18M3 18h18"/>
+                        </svg>
+                        打开侧边栏
+                    </button>
+                    <button class="action-btn secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                        清除数据
+                    </button>
+                    <button class="action-btn library-btn" onclick="toggleLibrary()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 006.5 22h11a2.5 2.5 0 002.5-2.5v-15A2.5 2.5 0 0017.5 2h-11A2.5 2.5 0 004 4.5v15zM8 6h8M8 10h8M8 14h5"/>
+                        </svg>
+                        <span>我的收藏</span>
+                        <div class="library-badge">📚</div>
+                    </button>      
+                </div>
+                
+                <!-- 收藏内容显示区域 -->
+                <div id="library-content" class="library-content" style="display: none;">
+                    <div class="library-header">
+                        <h3>我的收藏</h3>
+                        <button class="close-library-btn" onclick="toggleLibrary()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="library-list" class="library-list">
+                        <div class="library-loading">加载中...</div>
+                    </div>
+                </div>
+                
+                <div class="popup-footer">
+                    <div class="footer-links">
+                        <a href="#">反馈问题</a>
+                        <span class="separator">•</span>
+                        <a href="#">GitHub</a>
+                    </div>
+                    <div class="version">v1.0.0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-buttons">
+            <button class="demo-btn" onclick="showNormalState()">正常状态</button>
+            <button class="demo-btn" onclick="showLibraryState()">显示收藏</button>
+            <button class="demo-btn" onclick="showEmptyLibrary()">空收藏</button>
+            <button class="demo-btn" onclick="showSampleData()">示例数据</button>
+        </div>
+    </div>
+    
+    <script>
+        function toggleLibrary() {
+            const libraryContent = document.getElementById('library-content');
+            const popupStatus = document.querySelector('.popup-status');
+            const popupStats = document.querySelector('.popup-stats');
+            const popupActions = document.querySelector('.popup-actions');
+            const popupFooter = document.querySelector('.popup-footer');
+            
+            if (libraryContent.style.display === 'none') {
+                // 显示收藏内容
+                libraryContent.style.display = 'block';
+                popupStatus.style.display = 'none';
+                popupStats.style.display = 'none';
+                popupActions.style.display = 'none';
+                popupFooter.style.display = 'none';
+            } else {
+                // 隐藏收藏内容
+                libraryContent.style.display = 'none';
+                popupStatus.style.display = 'block';
+                popupStats.style.display = 'flex';
+                popupActions.style.display = 'flex';
+                popupFooter.style.display = 'flex';
+            }
+        }
+        
+        function showNormalState() {
+            const libraryContent = document.getElementById('library-content');
+            const popupStatus = document.querySelector('.popup-status');
+            const popupStats = document.querySelector('.popup-stats');
+            const popupActions = document.querySelector('.popup-actions');
+            const popupFooter = document.querySelector('.popup-footer');
+            
+            libraryContent.style.display = 'none';
+            popupStatus.style.display = 'block';
+            popupStats.style.display = 'flex';
+            popupActions.style.display = 'flex';
+            popupFooter.style.display = 'flex';
+            
+            // 重置按钮状态
+            document.querySelectorAll('.demo-btn').forEach(btn => btn.classList.remove('active'));
+        }
+        
+        function showLibraryState() {
+            toggleLibrary();
+            document.querySelectorAll('.demo-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function showEmptyLibrary() {
+            toggleLibrary();
+            const libraryList = document.getElementById('library-list');
+            libraryList.innerHTML = `
+                <div class="library-empty">
+                    <div class="library-empty-icon">📚</div>
+                    <div class="library-empty-text">暂无收藏内容</div>
+                    <div class="library-empty-hint">在AI对话中点击"收藏"按钮来添加内容</div>
+                </div>
+            `;
+            
+            document.querySelectorAll('.demo-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function showSampleData() {
+            toggleLibrary();
+            const libraryList = document.getElementById('library-list');
+            
+            const sampleData = [
+                {
+                    id: 1,
+                    title: '如何学习JavaScript？',
+                    content: 'JavaScript是一门动态类型语言，可以通过多种方式学习：1. 基础语法 2. DOM操作 3. 异步编程 4. 框架学习',
+                    addedToLibrary: '2024-01-15T10:30:00Z'
+                },
+                {
+                    id: 2,
+                    title: 'Python数据分析入门',
+                    content: '使用Python进行数据分析需要掌握：pandas、numpy、matplotlib等库，以及数据清洗、可视化等技能。',
+                    addedToLibrary: '2024-01-14T14:20:00Z'
+                },
+                {
+                    id: 3,
+                    title: '机器学习基础概念',
+                    content: '机器学习包括监督学习、无监督学习、强化学习等类型，需要理解算法原理和实际应用。',
+                    addedToLibrary: '2024-01-13T09:15:00Z'
+                }
+            ];
+            
+            const html = sampleData.map(item => `
+                <div class="library-item" data-id="${item.id}">
+                    <div class="library-item-title">${item.title}</div>
+                    <div class="library-item-content">${item.content}</div>
+                    <div class="library-item-meta">
+                        <div class="library-item-date">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+                            </svg>
+                            ${new Date(item.addedToLibrary).toLocaleDateString()}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            libraryList.innerHTML = html;
+            
+            document.querySelectorAll('.demo-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        // 初始化
+        showNormalState();
+    </script>
+</body>
+</html>

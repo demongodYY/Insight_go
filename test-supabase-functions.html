@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase云函数测试</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .test-button:hover {
+            background: #2563eb;
+        }
+        
+        .test-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .result-area {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .error {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .success {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+        }
+        
+        .input-group {
+            margin: 10px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .status.loading {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .status.success {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+        }
+        
+        .status.error {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Supabase云函数测试</h1>
+        <p>这个页面用于测试Supabase云函数调用，帮助排查"fail to fetch"错误。</p>
+        
+        <div class="test-section">
+            <h3>1. 配置信息</h3>
+            <div class="input-group">
+                <label>Supabase URL:</label>
+                <input type="text" id="supabaseUrl" value="https://hkhtzeqtovrobrfxjmmh.supabase.co" placeholder="输入你的Supabase URL">
+            </div>
+            <div class="input-group">
+                <label>Supabase Anon Key:</label>
+                <input type="text" id="supabaseAnonKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhraHR6ZXF0b3Zyb2JyZnhqbW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4OTMxNjcsImV4cCI6MjA3MDQ2OTE2N30._ZvMw0YcoND2dle57fYo23h_2RLFE8feN_IZ2aRxBeQ" placeholder="输入你的Supabase Anon Key">
+            </div>
+            <button class="test-button" onclick="testConnection()">测试连接</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. 测试云函数</h3>
+            <button class="test-button" onclick="testSaveKnowledgeCard()">测试 save-knowledge-card</button>
+            <button class="test-button" onclick="testSetCollectState()">测试 set-collect-state</button>
+            <button class="test-button" onclick="testGenerateCards()">测试 generate-cards</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 网络诊断</h3>
+            <button class="test-button" onclick="testDirectFetch()">直接测试fetch</button>
+            <button class="test-button" onclick="testCORS()">测试CORS</button>
+            <button class="test-button" onclick="checkNetworkInfo()">检查网络信息</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. 测试结果</h3>
+            <div id="status" class="status">准备就绪</div>
+            <div id="result" class="result-area">等待测试...</div>
+        </div>
+    </div>
+    
+    <script>
+        // 模拟Supabase客户端
+        class TestSupabaseClient {
+            constructor(url, anonKey) {
+                this.url = url;
+                this.anonKey = anonKey;
+            }
+            
+            async invokeFunction(functionName, options = {}) {
+                try {
+                    console.log(`测试调用 ${functionName}，URL: ${this.url}/functions/v1/${functionName}`);
+                    console.log('请求体:', options.body);
+                    
+                    const response = await fetch(`${this.url}/functions/v1/${functionName}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${this.anonKey}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(options.body || {})
+                    });
+                    
+                    console.log('响应状态:', response.status, response.statusText);
+                    console.log('响应头:', Object.fromEntries(response.headers.entries()));
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP错误 ${response.status}: ${errorText}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log('响应结果:', result);
+                    return result;
+                } catch (error) {
+                    console.error('调用失败:', error);
+                    throw error;
+                }
+            }
+        }
+        
+        let testClient = null;
+        
+        function updateStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function updateResult(content, isError = false) {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = content;
+            resultEl.className = `result-area ${isError ? 'error' : 'success'}`;
+        }
+        
+        function testConnection() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            const key = document.getElementById('supabaseAnonKey').value.trim();
+            
+            if (!url || !key) {
+                updateResult('请填写Supabase URL和Anon Key', true);
+                return;
+            }
+            
+            updateStatus('正在测试连接...', 'loading');
+            
+            try {
+                testClient = new TestSupabaseClient(url, key);
+                updateStatus('连接配置完成', 'success');
+                updateResult('Supabase客户端创建成功！\n\n配置信息:\nURL: ' + url + '\nAnon Key: ' + key.substring(0, 20) + '...');
+            } catch (error) {
+                updateStatus('连接失败', 'error');
+                updateResult('连接失败: ' + error.message, true);
+            }
+        }
+        
+        async function testSaveKnowledgeCard() {
+            if (!testClient) {
+                updateResult('请先测试连接', true);
+                return;
+            }
+            
+            updateStatus('正在测试 save-knowledge-card...', 'loading');
+            
+            try {
+                const testCard = {
+                    source: 'test',
+                    thread_id: 'test-thread-' + Date.now(),
+                    title: '测试卡片',
+                    question: '这是一个测试问题',
+                    answer: '这是一个测试回答',
+                    tags: ['测试', '调试'],
+                    is_collected: true
+                };
+                
+                const result = await testClient.invokeFunction('save-knowledge-card', {
+                    body: { card: testCard }
+                });
+                
+                updateStatus('测试成功', 'success');
+                updateResult('save-knowledge-card 测试成功！\n\n请求数据:\n' + JSON.stringify(testCard, null, 2) + '\n\n响应结果:\n' + JSON.stringify(result, null, 2));
+            } catch (error) {
+                updateStatus('测试失败', 'error');
+                updateResult('save-knowledge-card 测试失败:\n\n错误信息: ' + error.message + '\n\n可能的原因:\n1. 云函数未部署\n2. 函数名称错误\n3. 环境变量未设置\n4. 网络连接问题\n5. CORS配置问题', true);
+            }
+        }
+        
+        async function testSetCollectState() {
+            if (!testClient) {
+                updateResult('请先测试连接', true);
+                return;
+            }
+            
+            updateStatus('正在测试 set-collect-state...', 'loading');
+            
+            try {
+                const result = await testClient.invokeFunction('set-collect-state', {
+                    body: { id: 'test-id', desired: true }
+                });
+                
+                updateStatus('测试成功', 'success');
+                updateResult('set-collect-state 测试成功！\n\n响应结果:\n' + JSON.stringify(result, null, 2));
+            } catch (error) {
+                updateStatus('测试失败', 'error');
+                updateResult('set-collect-state 测试失败:\n\n错误信息: ' + error.message, true);
+            }
+        }
+        
+        async function testGenerateCards() {
+            if (!testClient) {
+                updateResult('请先测试连接', true);
+                return;
+            }
+            
+            updateStatus('正在测试 generate-cards...', 'loading');
+            
+            try {
+                const result = await testClient.invokeFunction('generate-cards', {
+                    body: { 
+                        text: '这是一个测试文本，用于测试知识卡片生成功能。',
+                        max_cards: 2,
+                        chatId: 'test-chat-' + Date.now()
+                    }
+                });
+                
+                updateStatus('测试成功', 'success');
+                updateResult('generate-cards 测试成功！\n\n响应结果:\n' + JSON.stringify(result, null, 2));
+            } catch (error) {
+                updateStatus('测试失败', 'error');
+                updateResult('generate-cards 测试失败:\n\n错误信息: ' + error.message, true);
+            }
+        }
+        
+        async function testDirectFetch() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            if (!url) {
+                updateResult('请先填写Supabase URL', true);
+                return;
+            }
+            
+            updateStatus('正在测试直接fetch...', 'loading');
+            
+            try {
+                const response = await fetch(`${url}/functions/v1/`);
+                updateStatus('直接fetch测试完成', 'success');
+                updateResult('直接fetch测试结果:\n状态码: ' + response.status + '\n状态文本: ' + response.statusText + '\n\n注意: 这是对根路径的测试，正常应该返回404或重定向');
+            } catch (error) {
+                updateStatus('直接fetch测试失败', 'error');
+                updateResult('直接fetch测试失败:\n\n错误信息: ' + error.message + '\n\n这表明可能存在:\n1. 网络连接问题\n2. URL不正确\n3. 防火墙阻止\n4. DNS解析问题', true);
+            }
+        }
+        
+        async function testCORS() {
+            const url = document.getElementById('supabaseUrl').value.trim();
+            if (!url) {
+                updateResult('请先填写Supabase URL', true);
+                return;
+            }
+            
+            updateStatus('正在测试CORS...', 'loading');
+            
+            try {
+                const response = await fetch(`${url}/functions/v1/test-cors`, {
+                    method: 'OPTIONS'
+                });
+                
+                updateStatus('CORS测试完成', 'success');
+                updateResult('CORS预检请求测试结果:\n状态码: ' + response.status + '\n状态文本: ' + response.statusText + '\n\nCORS头信息:\n' + JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+            } catch (error) {
+                updateStatus('CORS测试失败', 'error');
+                updateResult('CORS测试失败:\n\n错误信息: ' + error.message + '\n\n这表明可能存在:\n1. CORS配置问题\n2. 网络连接问题\n3. 函数未部署', true);
+            }
+        }
+        
+        function checkNetworkInfo() {
+            updateStatus('正在检查网络信息...', 'loading');
+            
+            const networkInfo = {
+                userAgent: navigator.userAgent,
+                online: navigator.onLine,
+                connection: navigator.connection ? {
+                    effectiveType: navigator.connection.effectiveType,
+                    downlink: navigator.connection.downlink,
+                    rtt: navigator.connection.rtt
+                } : '不支持',
+                platform: navigator.platform,
+                language: navigator.language,
+                cookieEnabled: navigator.cookieEnabled,
+                doNotTrack: navigator.doNotTrack,
+                timestamp: new Date().toISOString()
+            };
+            
+            updateStatus('网络信息检查完成', 'success');
+            updateResult('网络环境信息:\n\n' + JSON.stringify(networkInfo, null, 2));
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('准备就绪', 'success');
+            updateResult('请按顺序进行测试:\n\n1. 首先测试连接\n2. 然后测试云函数\n3. 如果失败，进行网络诊断\n\n所有测试结果都会显示在下方，请查看控制台获取更详细的信息。');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>会话存储功能测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .test-button:hover {
+      background: #0056b3;
+    }
+    .test-button.success {
+      background: #28a745;
+    }
+    .test-button.success:hover {
+      background: #218838;
+    }
+    .test-button.warning {
+      background: #ffc107;
+      color: #212529;
+    }
+    .test-button.warning:hover {
+      background: #e0a800;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+      background: #e9ecef;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .status.warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    .log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .storage-info {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .storage-item {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 5px 0;
+      font-size: 12px;
+    }
+    .storage-key {
+      color: #6c757d;
+      font-weight: bold;
+    }
+    .storage-value {
+      color: #495057;
+      margin: 5px 0;
+      word-break: break-all;
+    }
+    .storage-type {
+      color: #6c757d;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>会话存储功能测试</h1>
+  
+  <div class="test-section">
+    <h2>测试说明</h2>
+    <p>这个页面用于测试插件的会话存储功能。现在插件使用sessionStorage而不是持久化存储，确保：</p>
+    <ol>
+      <li>刷新页面后侧边栏不会重复提取目录</li>
+      <li>关闭页面后目录清空</li>
+      <li>重新打开页面时侧边栏重新提取问题形成目录</li>
+    </ol>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作按钮</h2>
+    <button class="test-button" onclick="addTestQuestions()">添加测试问题</button>
+    <button class="test-button" onclick="refreshPage()">刷新页面</button>
+    <button class="test-button warning" onclick="closePage()">模拟关闭页面</button>
+    <button class="test-button" onclick="checkStorage()">检查存储状态</button>
+    <button class="test-button" onclick="clearLog()">清空日志</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>当前状态</h2>
+    <div id="status" class="status">等待操作...</div>
+  </div>
+  
+  <div class="test-section">
+    <h2>存储信息</h2>
+    <div id="storage-info" class="storage-info">
+      <p>暂无存储信息</p>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作日志</h2>
+    <div id="log" class="log"></div>
+  </div>
+  
+  <script>
+    // 模拟插件的存储键
+    const STORAGE_KEYS = {
+      SESSION_QUESTIONS: 'act-nav-session-questions-test-chat',
+      PERSISTENT_QUESTIONS: 'act-nav-questions-test-chat',
+      CLEARED: 'act-nav-data-cleared',
+      TIMESTAMP: 'act-nav-clear-timestamp'
+    };
+    
+    // 日志函数
+    function log(message, type = 'info') {
+      const logElement = document.getElementById('log');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.innerHTML = `[${timestamp}] ${message}`;
+      logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#6c757d';
+      logElement.appendChild(logEntry);
+      logElement.scrollTop = logElement.scrollHeight;
+      console.log(`[${timestamp}] ${message}`);
+    }
+    
+    // 更新状态显示
+    function updateStatus(message, type = 'info') {
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = message;
+      statusElement.className = `status ${type}`;
+    }
+    
+    // 添加测试问题
+    function addTestQuestions() {
+      try {
+        log('开始添加测试问题...');
+        
+        const testQuestions = [
+          {
+            id: 'test-1',
+            text: '这是第一个测试问题',
+            fullText: '这是第一个测试问题的完整内容',
+            timestamp: Date.now(),
+            chatId: 'test-chat'
+          },
+          {
+            id: 'test-2',
+            text: '这是第二个测试问题',
+            fullText: '这是第二个测试问题的完整内容',
+            timestamp: Date.now() + 1000,
+            chatId: 'test-chat'
+          }
+        ];
+        
+        // 保存到会话存储
+        sessionStorage.setItem(STORAGE_KEYS.SESSION_QUESTIONS, JSON.stringify(testQuestions));
+        
+        log(`成功添加 ${testQuestions.length} 个测试问题到会话存储`, 'success');
+        updateStatus(`已添加 ${testQuestions.length} 个测试问题到会话存储`, 'success');
+        
+        // 检查存储状态
+        checkStorage();
+        
+      } catch (error) {
+        log(`添加测试问题失败: ${error.message}`, 'error');
+        updateStatus(`添加测试问题失败: ${error.message}`, 'error');
+      }
+    }
+    
+    // 刷新页面
+    function refreshPage() {
+      log('准备刷新页面...', 'warning');
+      updateStatus('页面即将刷新，会话存储数据应该保留', 'warning');
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    }
+    
+    // 模拟关闭页面
+    function closePage() {
+      log('模拟关闭页面...', 'warning');
+      updateStatus('模拟关闭页面，会话存储数据应该被清理', 'warning');
+      
+      // 模拟页面卸载事件
+      window.dispatchEvent(new Event('beforeunload'));
+      
+      // 清理会话存储
+      cleanupSessionStorage();
+      
+      log('页面已关闭，会话存储已清理', 'success');
+      updateStatus('页面已关闭，会话存储已清理', 'success');
+      
+      // 检查存储状态
+      checkStorage();
+    }
+    
+    // 清理会话存储
+    function cleanupSessionStorage() {
+      try {
+        // 清理所有以 act-nav-session- 开头的会话存储键
+        const keysToRemove = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && key.startsWith('act-nav-session-')) {
+            keysToRemove.push(key);
+          }
+        }
+        
+        keysToRemove.forEach(key => {
+          sessionStorage.removeItem(key);
+          log(`清理会话存储键: ${key}`, 'success');
+        });
+        
+        log(`清理了 ${keysToRemove.length} 个会话存储键`, 'success');
+      } catch (error) {
+        log(`清理会话存储时出错: ${error.message}`, 'error');
+      }
+    }
+    
+    // 检查存储状态
+    function checkStorage() {
+      try {
+        log('检查存储状态...');
+        
+        // 检查会话存储
+        const sessionQuestions = JSON.parse(sessionStorage.getItem(STORAGE_KEYS.SESSION_QUESTIONS) || '[]');
+        log(`会话存储中的问题数量: ${sessionQuestions.length}`);
+        
+        // 检查持久化存储（模拟chrome.storage.local）
+        const persistentQuestions = JSON.parse(localStorage.getItem(STORAGE_KEYS.PERSISTENT_QUESTIONS) || '[]');
+        log(`持久化存储中的问题数量: ${persistentQuestions.length}`);
+        
+        // 检查清除标记
+        const isCleared = JSON.parse(localStorage.getItem(STORAGE_KEYS.CLEARED) || 'false');
+        const clearTimestamp = JSON.parse(localStorage.getItem(STORAGE_KEYS.TIMESTAMP) || '0');
+        log(`清除标记: ${isCleared}`);
+        
+        if (clearTimestamp > 0) {
+          const clearTime = new Date(clearTimestamp);
+          log(`清除时间: ${clearTime.toLocaleString()}`);
+        }
+        
+        // 更新存储信息显示
+        updateStorageInfo();
+        
+        // 更新状态
+        if (sessionQuestions.length > 0) {
+          updateStatus(`会话存储中有 ${sessionQuestions.length} 个问题，持久化存储中有 ${persistentQuestions.length} 个问题`, 'info');
+        } else {
+          updateStatus('会话存储中没有问题', 'warning');
+        }
+        
+      } catch (error) {
+        log(`检查存储状态失败: ${error.message}`, 'error');
+        updateStatus(`检查存储状态失败: ${error.message}`, 'error');
+      }
+    }
+    
+    // 更新存储信息显示
+    function updateStorageInfo() {
+      const storageInfoElement = document.getElementById('storage-info');
+      
+      // 收集所有存储信息
+      const storageData = [];
+      
+      // 会话存储
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && key.startsWith('act-nav-')) {
+          try {
+            const value = sessionStorage.getItem(key);
+            storageData.push({
+              key: key,
+              value: value,
+              type: 'sessionStorage'
+            });
+          } catch (error) {
+            storageData.push({
+              key: key,
+              value: '读取失败',
+              type: 'sessionStorage'
+            });
+          }
+        }
+      }
+      
+      // 本地存储（模拟持久化存储）
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('act-nav-')) {
+          try {
+            const value = localStorage.getItem(key);
+            storageData.push({
+              key: key,
+              value: value,
+              type: 'localStorage'
+            });
+          } catch (error) {
+            storageData.push({
+              key: key,
+              value: '读取失败',
+              type: 'localStorage'
+            });
+          }
+        }
+      }
+      
+      if (storageData.length === 0) {
+        storageInfoElement.innerHTML = '<p>暂无存储信息</p>';
+        return;
+      }
+      
+      storageInfoElement.innerHTML = storageData.map(item => `
+        <div class="storage-item">
+          <div class="storage-key">${item.key}</div>
+          <div class="storage-value">${item.value}</div>
+          <div class="storage-type">类型: ${item.type}</div>
+        </div>
+      `).join('');
+    }
+    
+    // 清空日志
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+      log('日志已清空');
+    }
+    
+    // 页面加载时检查存储状态
+    window.addEventListener('load', () => {
+      log('页面加载完成，开始检查存储状态');
+      updateStatus('页面已加载，检查存储状态', 'info');
+      checkStorage();
+    });
+    
+    // 页面卸载前清理会话存储
+    window.addEventListener('beforeunload', () => {
+      log('页面即将卸载，清理会话存储');
+      cleanupSessionStorage();
+    });
+    
+    // 页面可见性变化时检查
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        log('页面变为可见状态');
+      } else if (document.visibilityState === 'hidden') {
+        log('页面变为隐藏状态');
+      }
+    });
+  </script>
+</body>
+</html>

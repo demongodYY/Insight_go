@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>展开功能简单测试</title>
+    <style>
+        .act-nav-card {
+            background: #fff;
+            border: 1px solid #ebedf0;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+            max-width: 500px;
+        }
+        
+        .act-nav-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .act-nav-card-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #4b5563;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+            max-height: 4.8em;
+            transition: max-height 0.3s ease;
+        }
+        
+        /* 展开状态：不截断 */
+        .act-nav-card[data-expanded="1"] .act-nav-card-text,
+        .act-nav-card.expanded .act-nav-card-text {
+            display: block;
+            overflow: visible;
+            -webkit-line-clamp: initial;
+            line-clamp: initial;
+            max-height: none;
+        }
+        
+        .act-nav-expand-btn {
+            display: inline-block;
+            margin: 8px 0 4px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: #e5e7eb;
+            font-size: 13px;
+            color: #111827;
+            cursor: pointer;
+            border: 0;
+        }
+        
+        .act-nav-expand-btn:hover {
+            background: #d1d5db;
+        }
+        
+        .debug {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>展开功能测试（修复版）</h1>
+    
+    <div class="debug">
+        <strong>测试说明：</strong><br>
+        1. 默认显示4行，超出部分省略<br>
+        2. 点击"展开全文"应该显示全部内容<br>
+        3. 点击"收起"应该回到4行显示
+    </div>
+    
+    <div class="act-nav-card" data-expanded="0">
+        <div class="act-nav-card-title">测试卡片</div>
+        <div class="act-nav-card-text">
+            这是一段很长的文本内容，用来测试展开功能是否正常工作。这段文本应该超过4行，这样就能看到省略号的效果。当点击"展开全文"按钮时，文本应该完整显示，不再被截断。这是一个非常重要的功能，让用户可以在有限的空间内快速浏览卡片概要，需要时再展开查看完整内容。
+            
+            第二段内容继续测试展开功能。这里应该能看到更多的文本内容，确保展开功能能够正确处理长文本。如果功能正常工作，用户应该能够通过点击按钮来切换文本的显示状态。
+            
+            第三段内容用于进一步测试。这段内容应该足够长，能够触发展开按钮的显示，并且能够验证CSS样式是否正确应用。如果展开功能修复成功，用户应该能够看到完整的文本内容。
+        </div>
+        <button class="act-nav-expand-btn" onclick="toggleExpand(this)">展开全文</button>
+    </div>
+    
+    <div class="debug" id="status">
+        状态: 收起 (data-expanded="0")
+    </div>
+    
+    <script>
+        function toggleExpand(btn) {
+            const cardEl = btn.closest('.act-nav-card');
+            const expanded = cardEl.getAttribute('data-expanded') === '1';
+            const newState = expanded ? '0' : '1';
+            
+            // 设置新的展开状态
+            cardEl.setAttribute('data-expanded', newState);
+            
+            // 同时设置CSS类，确保兼容性
+            if (newState === '1') {
+                cardEl.classList.add('expanded');
+            } else {
+                cardEl.classList.remove('expanded');
+            }
+            
+            // 更新按钮文字
+            btn.textContent = expanded ? '展开全文' : '收起';
+            
+            // 更新状态显示
+            document.getElementById('status').textContent = 
+                `状态: ${newState === '1' ? '展开' : '收起'} (data-expanded="${newState}", class="${cardEl.className}")`;
+            
+            console.log('展开状态切换:', {
+                oldState: expanded ? '展开' : '收起',
+                newState: newState === '1' ? '展开' : '收起',
+                dataExpanded: cardEl.getAttribute('data-expanded'),
+                hasExpandedClass: cardEl.classList.contains('expanded')
+            });
+        }
+    </script>
+</body>
+</html>

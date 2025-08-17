@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹出窗口修复测试</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+        }
+        
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .test-button:hover {
+            background: #2563eb;
+        }
+        
+        .test-button.secondary {
+            background: #6b7280;
+        }
+        
+        .test-button.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .result-area {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .error {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .success {
+            background: #f0fdf4;
+            border-left: 4px solid #22c55e;
+        }
+        
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>弹出窗口修复测试</h1>
+        <p>这个页面用于测试"我的收藏"功能的各种打开方式，帮助排查弹出窗口被阻止的问题。</p>
+        
+        <div class="test-section">
+            <h3>1. 测试不同的打开方式</h3>
+            <button class="test-button" onclick="testChromeRuntime()">测试 chrome.runtime.openOptionsPage</button>
+            <button class="test-button" onclick="testChromeTabs()">测试 chrome.tabs.create</button>
+            <button class="test-button" onclick="testWindowOpen()">测试 window.open</button>
+            <button class="test-button secondary" onclick="testAllMethods()">测试所有方法</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. 模拟扩展环境</h3>
+            <button class="test-button" onclick="simulateExtension()">模拟Chrome扩展环境</button>
+            <button class="test-button" onclick="checkEnvironment()">检查当前环境</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 测试结果</h3>
+            <div id="status" class="result-area">等待测试...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. 故障排除建议</h3>
+            <div class="result-area warning">
+                <strong>如果"我的收藏"仍然无法打开，请尝试：</strong>
+                
+                1. <strong>检查浏览器设置</strong>
+                   - 确保允许此网站的弹出窗口
+                   - 检查广告拦截器设置
+                   - 确认扩展权限已授予
+                
+                2. <strong>手动访问</strong>
+                   - 直接输入URL: chrome-extension://[扩展ID]/ui/options.html
+                   - 在扩展管理页面点击"选项"
+                
+                3. <strong>重新加载扩展</strong>
+                   - 在扩展管理页面点击"重新加载"
+                   - 重启浏览器
+                
+                4. <strong>检查控制台错误</strong>
+                   - 按F12打开开发者工具
+                   - 查看Console标签页的错误信息
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let testResults = [];
+        
+        function updateStatus(content, type = 'success') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = content;
+            statusEl.className = `result-area ${type}`;
+        }
+        
+        function addResult(method, success, message) {
+            const result = {
+                method,
+                success,
+                message,
+                timestamp: new Date().toISOString()
+            };
+            testResults.push(result);
+            
+            console.log(`测试结果 [${method}]:`, result);
+            
+            // 更新状态显示
+            const summary = testResults.map(r => 
+                `${r.method}: ${r.success ? '✅ 成功' : '❌ 失败'} - ${r.message}`
+            ).join('\n');
+            
+            updateStatus(summary, testResults.some(r => !r.success) ? 'warning' : 'success');
+        }
+        
+        function testChromeRuntime() {
+            console.log('测试 chrome.runtime.openOptionsPage...');
+            
+            if (typeof chrome !== 'undefined' && chrome.runtime?.openOptionsPage) {
+                try {
+                    chrome.runtime.openOptionsPage();
+                    addResult('chrome.runtime.openOptionsPage', true, '成功调用');
+                } catch (error) {
+                    addResult('chrome.runtime.openOptionsPage', false, '调用失败: ' + error.message);
+                }
+            } else {
+                addResult('chrome.runtime.openOptionsPage', false, 'chrome.runtime.openOptionsPage 不可用');
+            }
+        }
+        
+        function testChromeTabs() {
+            console.log('测试 chrome.tabs.create...');
+            
+            if (typeof chrome !== 'undefined' && chrome.tabs?.create) {
+                try {
+                    // 模拟创建新标签页
+                    const testUrl = 'https://example.com';
+                    chrome.tabs.create({ url: testUrl, active: false }, (tab) => {
+                        if (chrome.runtime.lastError) {
+                            addResult('chrome.tabs.create', false, '创建失败: ' + chrome.runtime.lastError.message);
+                        } else {
+                            addResult('chrome.tabs.create', true, '成功创建标签页');
+                            // 立即关闭测试标签页
+                            chrome.tabs.remove(tab.id);
+                        }
+                    });
+                } catch (error) {
+                    addResult('chrome.tabs.create', false, '调用失败: ' + error.message);
+                }
+            } else {
+                addResult('chrome.tabs.create', false, 'chrome.tabs.create 不可用');
+            }
+        }
+        
+        function testWindowOpen() {
+            console.log('测试 window.open...');
+            
+            try {
+                const testUrl = 'https://example.com';
+                const newWindow = window.open(testUrl, '_blank', 'width=400,height=300');
+                
+                if (newWindow) {
+                    addResult('window.open', true, '成功打开新窗口');
+                    // 立即关闭测试窗口
+                    newWindow.close();
+                } else {
+                    addResult('window.open', false, '弹出窗口被阻止');
+                }
+            } catch (error) {
+                addResult('window.open', false, '调用失败: ' + error.message);
+            }
+        }
+        
+        async function testAllMethods() {
+            console.log('开始测试所有方法...');
+            testResults = [];
+            
+            // 依次测试所有方法
+            testChromeRuntime();
+            
+            // 等待一下再测试下一个
+            setTimeout(() => {
+                testChromeTabs();
+                
+                setTimeout(() => {
+                    testWindowOpen();
+                }, 500);
+            }, 500);
+        }
+        
+        function simulateExtension() {
+            console.log('模拟Chrome扩展环境...');
+            
+            // 模拟chrome对象
+            if (typeof chrome === 'undefined') {
+                window.chrome = {
+                    runtime: {
+                        openOptionsPage: () => {
+                            console.log('模拟: chrome.runtime.openOptionsPage 被调用');
+                            addResult('模拟环境', true, 'chrome.runtime.openOptionsPage 可用');
+                        },
+                        getURL: (path) => {
+                            return `chrome-extension://mock-extension-id/${path}`;
+                        }
+                    },
+                    tabs: {
+                        create: (options) => {
+                            console.log('模拟: chrome.tabs.create 被调用', options);
+                            addResult('模拟环境', true, 'chrome.tabs.create 可用');
+                            return Promise.resolve({ id: 'mock-tab-id' });
+                        }
+                    }
+                };
+                
+                addResult('模拟环境', true, 'Chrome扩展环境已模拟');
+            } else {
+                addResult('模拟环境', false, 'Chrome扩展环境已存在，无需模拟');
+            }
+        }
+        
+        function checkEnvironment() {
+            console.log('检查当前环境...');
+            
+            const environment = {
+                userAgent: navigator.userAgent,
+                isChrome: /Chrome/.test(navigator.userAgent),
+                hasChrome: typeof chrome !== 'undefined',
+                hasChromeRuntime: typeof chrome !== 'undefined' && !!chrome.runtime,
+                hasChromeTabs: typeof chrome !== 'undefined' && !!chrome.tabs,
+                hasOpenOptionsPage: typeof chrome !== 'undefined' && !!chrome.runtime?.openOptionsPage,
+                hasTabsCreate: typeof chrome !== 'undefined' && !!chrome.tabs?.create,
+                timestamp: new Date().toISOString()
+            };
+            
+            console.log('环境信息:', environment);
+            
+            const summary = Object.entries(environment)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n');
+            
+            updateStatus('环境检查结果:\n\n' + summary, 'success');
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('测试页面已加载完成。\n\n请点击上方的测试按钮来验证各种打开方式。\n\n如果某些方法失败，请查看控制台的详细错误信息。');
+            
+            // 自动检查环境
+            setTimeout(checkEnvironment, 1000);
+        });
+    </script>
+</body>
+</html>

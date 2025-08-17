@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>展开功能调试测试</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .act-nav-card {
+            background: #fff;
+            border: 1px solid #ebedf0;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+        }
+        
+        .act-nav-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+        
+        .act-nav-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            line-height: 1.4;
+        }
+        
+        .act-nav-card-body {
+            font-size: 13px;
+            color: #4b5563;
+            line-height: 1.55;
+        }
+        
+        /* 卡片正文默认 4 行省略 */
+        .act-nav-card-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #4b5563;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+            max-height: 4.8em;
+            transition: max-height 0.3s ease;
+            word-wrap: break-word;
+        }
+        
+        /* 展开状态：不截断 */
+        .act-nav-card[data-expanded="1"] .act-nav-card-text,
+        .act-nav-card.expanded .act-nav-card-text {
+            display: block;
+            overflow: visible;
+            -webkit-line-clamp: initial;
+            line-clamp: initial;
+            max-height: none;
+        }
+        
+        .act-nav-expand-btn {
+            display: inline-block;
+            margin: 8px 0 4px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: #e5e7eb;
+            font-size: 13px;
+            color: #111827;
+            cursor: pointer;
+            border: 0;
+        }
+        
+        .act-nav-expand-btn:hover {
+            background: #d1d5db;
+        }
+        
+        .debug-info {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .card-debug {
+            background: #fef3c7;
+            padding: 8px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-size: 11px;
+            border-left: 3px solid #f59e0b;
+        }
+        
+        .tag {
+            display: inline-block;
+            background: #f3f4f6;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            margin: 2px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>展开功能调试测试</h1>
+        <p>这个页面模拟实际的知识卡片数据，帮助排查展开按钮不显示的问题。</p>
+        
+        <div class="debug-info">
+            <strong>测试说明：</strong><br>
+            1. 卡片1: 文本长度约50字符 (不应该显示展开按钮)<br>
+            2. 卡片2: 文本长度约100字符 (应该显示展开按钮)<br>
+            3. 卡片3: 文本长度约150字符 (应该显示展开按钮)<br>
+            4. 卡片4: 文本长度约200字符 (应该显示展开按钮)
+        </div>
+        
+        <div id="cards-container"></div>
+        
+        <div class="debug-info">
+            <strong>调试信息：</strong><br>
+            请打开浏览器控制台查看每张卡片的详细信息
+        </div>
+    </div>
+    
+    <script>
+        // 模拟知识卡片数据
+        const mockCards = [
+            {
+                title: '清明经典赏花地',
+                summary: '清明节推荐江西婺源(梯田油菜花+徽派建筑,3月下旬-4月中旬)、无锡鼋头渚(国内三大赏樱胜地之一,3月下旬-4月上旬)。',
+                tags: ['清明节', '赏花', '旅游攻略']
+            },
+            {
+                title: '清明小众赏花秘境',
+                summary: '清明节除了热门景点，还可以选择一些小众的赏花地点。比如安徽宏村的油菜花田，云南罗平的油菜花海，以及四川金川的梨花。这些地方人少景美，是清明节赏花的好选择。',
+                tags: ['清明节', '小众景点', '赏花']
+            },
+            {
+                title: '清明节赏花时间安排',
+                summary: '清明节赏花的最佳时间是3月下旬到4月中旬。建议提前规划行程，避开节假日高峰。可以选择工作日出行，或者选择一些相对冷门的景点。同时要注意天气变化，带好防晒和雨具。',
+                tags: ['清明节', '时间安排', '出行建议']
+            },
+            {
+                title: '清明节赏花装备清单',
+                summary: '清明节赏花需要准备一些必要的装备。首先是相机，记录美丽的风景；其次是防晒用品，春季紫外线较强；然后是舒适的鞋子，因为可能需要长时间步行；最后是一些零食和水，保持体力。',
+                tags: ['清明节', '装备清单', '出行准备']
+            }
+        ];
+        
+        // 模拟pick函数
+        const pick = (obj, keys) => keys.map(k => obj?.[k]).find(v => typeof v === 'string' && v.trim()) || '';
+        
+        // 模拟escape函数
+        const esc = (s = '') => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        
+        function renderCards() {
+            const container = document.getElementById('cards-container');
+            
+            container.innerHTML = mockCards.map((c, idx) => {
+                const title = pick(c, ['title','point','question','summary']) || '未命名卡片';
+                const body = pick(c, ['answer','summary','content','details','logic','text','question']);
+                const tags = Array.isArray(c.tags) ? c.tags : [];
+                const needExpand = (body || '').length > 80; // 降低阈值，让更多卡片显示展开按钮
+                
+                // 调试信息
+                console.log(`卡片${idx}展开信息:`, {
+                    title,
+                    bodyLength: (body || '').length,
+                    bodyPreview: (body || '').substring(0, 100) + '...',
+                    needExpand,
+                    availableFields: ['answer','summary','content','details','logic','text','question'].map(field => ({
+                        field,
+                        value: c[field],
+                        hasValue: !!c[field]
+                    }))
+                });
+                
+                return `
+                    <div class="act-nav-card" data-card-idx="${idx}" data-expanded="0">
+                        <div class="act-nav-card-header">
+                            <div class="act-nav-card-title">${esc(title)}</div>
+                        </div>
+                        <div class="act-nav-card-body" style="white-space:pre-wrap;">
+                            ${body ? `<div class="act-nav-card-text">${esc(body)}</div>` : '<div class="muted">（无正文）</div>'}
+                            ${needExpand ? `<button class="act-nav-expand-btn" data-card-idx="${idx}">展开全文</button>` : ''}
+                            ${tags.length ? `<div class="act-nav-card-tags">${tags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>` : ''}
+                        </div>
+                        <div class="card-debug">
+                            <strong>调试信息:</strong><br>
+                            文本长度: ${(body || '').length} 字符<br>
+                            需要展开: ${needExpand ? '是' : '否'}<br>
+                            展开按钮: ${needExpand ? '显示' : '隐藏'}<br>
+                            data-expanded: "${idx === 0 ? '0' : '0'}"
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // 绑定展开事件
+            container.addEventListener('click', (ev) => {
+                const btn = ev.target.closest('.act-nav-expand-btn');
+                if (!btn) return;
+                
+                const cardEl = btn.closest('.act-nav-card');
+                if (!cardEl) return;
+                
+                const expanded = cardEl.getAttribute('data-expanded') === '1';
+                const newState = expanded ? '0' : '1';
+                
+                // 设置新的展开状态
+                cardEl.setAttribute('data-expanded', newState);
+                
+                // 同时设置CSS类，确保兼容性
+                if (newState === '1') {
+                    cardEl.classList.add('expanded');
+                } else {
+                    cardEl.classList.remove('expanded');
+                }
+                
+                // 更新按钮文字
+                btn.textContent = expanded ? '展开全文' : '收起';
+                
+                // 更新调试信息
+                const debugEl = cardEl.querySelector('.card-debug');
+                if (debugEl) {
+                    debugEl.innerHTML = debugEl.innerHTML.replace(
+                        /data-expanded: "[^"]*"/,
+                        `data-expanded: "${newState}"`
+                    );
+                }
+                
+                console.log('展开状态切换:', {
+                    cardId: cardEl.querySelector('.act-nav-card-title')?.textContent || '未知卡片',
+                    oldState: expanded ? '展开' : '收起',
+                    newState: newState === '1' ? '展开' : '收起',
+                    dataExpanded: cardEl.getAttribute('data-expanded'),
+                    hasExpandedClass: cardEl.classList.contains('expanded')
+                });
+            });
+        }
+        
+        // 页面加载完成后渲染卡片
+        document.addEventListener('DOMContentLoaded', renderCards);
+    </script>
+</body>
+</html>

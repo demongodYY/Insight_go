@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>弹出窗口美化效果预览</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .preview-container {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .popup-preview {
+            width: 320px;
+            min-height: 400px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .popup-preview.dark {
+            background: #111827;
+        }
+        
+        .popup-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        
+        /* 头部 */
+        .popup-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .popup-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 12px;
+        }
+        
+        .popup-title h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+        
+        .popup-title p {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .dark .popup-title h1 {
+            color: #f9fafb;
+        }
+        
+        .dark .popup-title p {
+            color: #9ca3af;
+        }
+        
+        /* 状态指示器 */
+        .popup-status {
+            margin-bottom: 20px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            color: #0369a1;
+        }
+        
+        .status-indicator.active {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-indicator span {
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        /* 统计信息 */
+        .popup-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .dark .stat-item {
+            background: #1f2937;
+            border-color: #374151;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .dark .stat-label {
+            color: #9ca3af;
+        }
+        
+        /* 操作按钮 */
+        .popup-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .action-btn:hover::before {
+            left: 100%;
+        }
+        
+        .action-btn.primary {
+            background: #3b82f6;
+            color: white;
+            margin-bottom: 4px;
+        }
+        
+        .action-btn.primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .action-btn.secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            margin-bottom: 2px;
+        }
+        
+        .action-btn.secondary:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+        
+        .dark .action-btn.secondary {
+            background: #374151;
+            color: #d1d5db;
+            border-color: #4b5563;
+        }
+        
+        .dark .action-btn.secondary:hover {
+            background: #4b5563;
+        }
+        
+        .action-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* 我的收藏按钮特殊样式 */
+        .action-btn.library-btn {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+            margin-bottom: 2px;
+        }
+        
+        .action-btn.library-btn:hover {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+        
+        .action-btn.library-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+        
+        .action-btn.library-btn svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5;
+        }
+        
+        .action-btn.library-btn span {
+            font-weight: 600;
+        }
+        
+        .library-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #fbbf24;
+            color: #92400e;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 12px;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-3px); }
+            60% { transform: translateY(-1px); }
+        }
+        
+        .dark .action-btn.library-btn {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+        }
+        
+        .dark .action-btn.library-btn:hover {
+            background: linear-gradient(135deg, #6d28d9, #5b21b6);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5);
+        }
+        
+        .dark .library-badge {
+            background: #f59e0b;
+            color: #78350f;
+            border-color: #1f2937;
+        }
+        
+        /* 页脚 */
+        .popup-footer {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dark .popup-footer {
+            border-top-color: #374151;
+        }
+        
+        .footer-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #3b82f6;
+        }
+        
+        .dark .footer-links a {
+            color: #9ca3af;
+        }
+        
+        .dark .footer-links a:hover {
+            color: #60a5fa;
+        }
+        
+        .separator {
+            color: #d1d5db;
+            font-size: 12px;
+        }
+        
+        .dark .separator {
+            color: #4b5563;
+        }
+        
+        .version {
+            font-size: 12px;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+        
+        .dark .version {
+            color: #6b7280;
+        }
+        
+        .preview-label {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">切换主题</button>
+    
+    <div class="preview-container">
+        <div>
+            <div class="preview-label">浅色主题</div>
+            <div class="popup-preview">
+                <div class="popup-container">
+                    <div class="popup-header">
+                        <div class="popup-logo">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12h18M3 6h18M3 18h18"/>
+                            </svg>
+                        </div>
+                        <div class="popup-title">
+                            <h1>即刻导航</h1>
+                            <p>AI对话目录</p>
+                        </div>
+                    </div>
+                    
+                    <div class="popup-status">
+                        <div class="status-indicator active">
+                            <div class="status-dot"></div>
+                            <span>已在当前页面激活</span>
+                        </div>
+                    </div>
+                    
+                    <div class="popup-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">对话问题</div>
+                        </div>
+                    </div>
+                    
+                    <div class="popup-actions">
+                        <button class="action-btn primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12h18M3 6h18M3 18h18"/>
+                            </svg>
+                            打开侧边栏
+                        </button>
+                        <button class="action-btn secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                            </svg>
+                            清除数据
+                        </button>
+                        <button class="action-btn library-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 006.5 22h11a2.5 2.5 0 002.5-2.5v-15A2.5 2.5 0 0017.5 2h-11A2.5 2.5 0 004 4.5v15zM8 6h8M8 10h8M8 14h5"/>
+                            </svg>
+                            <span>我的收藏</span>
+                            <div class="library-badge">📚</div>
+                        </button>
+                    </div>
+                    
+                    <div class="popup-footer">
+                        <div class="footer-links">
+                            <a href="#">反馈问题</a>
+                            <span class="separator">•</span>
+                            <a href="#">GitHub</a>
+                        </div>
+                        <div class="version">v1.0.0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <div class="preview-label">深色主题</div>
+            <div class="popup-preview dark">
+                <div class="popup-container">
+                    <div class="popup-header">
+                        <div class="popup-logo">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12h18M3 6h18M3 18h18"/>
+                            </svg>
+                        </div>
+                        <div class="popup-title">
+                            <h1>即刻导航</h1>
+                            <p>AI对话目录</p>
+                        </div>
+                    </div>
+                    
+                    <div class="popup-status">
+                        <div class="status-indicator active">
+                            <div class="status-dot"></div>
+                            <span>已在当前页面激活</span>
+                        </div>
+                    </div>
+                    
+                    <div class="popup-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">对话问题</div>
+                        </div>
+                    </div>
+                    
+                    <div class="popup-actions">
+                        <button class="action-btn primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12h18M3 6h18M3 18h18"/>
+                            </svg>
+                            打开侧边栏
+                        </button>
+                        <button class="action-btn secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                            </svg>
+                            清除数据
+                        </button>
+                        <button class="action-btn library-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 006.5 22h11a2.5 2.5 0 002.5-2.5v-15A2.5 2.5 0 0017.5 2h-11A2.5 2.5 0 004 4.5v15zM8 6h8M8 10h8M8 14h5"/>
+                            </svg>
+                            <span>我的收藏</span>
+                            <div class="library-badge">📚</div>
+                        </button>
+                    </div>
+                    
+                    <div class="popup-footer">
+                        <div class="footer-links">
+                            <a href="#">反馈问题</a>
+                            <span class="separator">•</span>
+                            <a href="#">GitHub</a>
+                        </div>
+                        <div class="version">v1.0.0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            if (body.style.background.includes('dark')) {
+                body.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            } else {
+                body.style.background = 'linear-gradient(135deg, #1e3a8a 0%, #7c2d12 100%)';
+            }
+        }
+        
+        // 添加一些交互效果
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // 添加点击波纹效果
+                const ripple = document.createElement('div');
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(255, 255, 255, 0.3)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.6s linear';
+                ripple.style.left = e.offsetX + 'px';
+                ripple.style.top = e.offsetY + 'px';
+                ripple.style.width = ripple.style.height = '20px';
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+        
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

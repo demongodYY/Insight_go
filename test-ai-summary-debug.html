@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI总结功能调试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #6b7280;
+        }
+        .debug-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        .debug-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+        }
+        .debug-content {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .status.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+        .mock-data {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .mock-data h4 {
+            margin: 0 0 10px 0;
+            color: #92400e;
+        }
+        .mock-data pre {
+            margin: 0;
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🤖 AI总结功能调试页面</h1>
+            <p class="subtitle">用于调试和测试AI自动总结功能的各个组件</p>
+        </div>
+
+        <div class="debug-section">
+            <h3 class="debug-title">🔍 调试信息</h3>
+            <div id="debug-info">
+                <div class="status info">等待开始调试...</div>
+            </div>
+        </div>
+
+        <div class="debug-section">
+            <h3 class="debug-title">🧪 测试功能</h3>
+            <button class="test-button" onclick="testDataExtraction()">测试数据提取</button>
+            <button class="test-button" onclick="testCardRendering()">测试卡片渲染</button>
+            <button class="test-button" onclick="testMockData()">测试模拟数据</button>
+            <button class="test-button" onclick="clearDebug()">清空调试信息</button>
+        </div>
+
+        <div class="debug-section">
+            <h3 class="debug-title">📊 模拟数据</h3>
+            <div class="mock-data">
+                <h4>AI返回的标准数据结构：</h4>
+                <pre>{
+  "cards": [
+    {
+      "title": "Python异常处理",
+      "summary": "Python异常处理是编程中的重要概念，使用try-except语句可以捕获和处理程序运行时的错误。通过合理的异常处理，可以提高程序的健壮性和用户体验。",
+      "tags": ["Python", "异常处理", "编程"]
+    },
+    {
+      "title": "异步编程基础",
+      "summary": "异步编程允许程序在等待I/O操作完成时继续执行其他任务，提高程序的效率。在Python中，可以使用async/await语法实现异步编程。",
+      "tags": ["异步编程", "Python", "性能优化"]
+    }
+  ]
+}</pre>
+            </div>
+        </div>
+
+        <div class="debug-section">
+            <h3 class="debug-title">🎯 预期结果</h3>
+            <div id="expected-results">
+                <div class="status info">点击测试按钮查看结果...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let debugLog = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            debugLog.push({ message: logEntry, type });
+            
+            const debugInfo = document.getElementById('debug-info');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = logEntry;
+            debugInfo.appendChild(statusDiv);
+            
+            console.log(logEntry);
+        }
+        
+        function clearDebug() {
+            debugLog = [];
+            document.getElementById('debug-info').innerHTML = '<div class="status info">调试信息已清空</div>';
+            document.getElementById('expected-results').innerHTML = '<div class="status info">点击测试按钮查看结果...</div>';
+        }
+        
+        function testDataExtraction() {
+            log('开始测试数据提取功能...', 'info');
+            
+            // 模拟对话数据
+            const mockConversation = {
+                source: 'DeepSeek',
+                url: 'https://chat.deepseek.com/chat/123',
+                messages: [
+                    {
+                        role: 'user',
+                        text: '请介绍一下Python的异常处理机制'
+                    },
+                    {
+                        role: 'assistant',
+                        text: 'Python异常处理使用try-except语句，可以捕获和处理程序运行时的错误...'
+                    }
+                ]
+            };
+            
+            log(`提取到 ${mockConversation.messages.length} 条对话消息`, 'success');
+            log(`对话来源: ${mockConversation.source}`, 'info');
+            log(`对话URL: ${mockConversation.url}`, 'info');
+            
+            mockConversation.messages.forEach((msg, index) => {
+                log(`消息${index + 1}: ${msg.role} - ${msg.text.substring(0, 50)}...`, 'info');
+            });
+            
+            return mockConversation;
+        }
+        
+        function testCardRendering() {
+            log('开始测试卡片渲染功能...', 'info');
+            
+            // 模拟AI返回的知识卡片数据
+            const mockCards = [
+                {
+                    title: 'Python异常处理',
+                    summary: 'Python异常处理是编程中的重要概念，使用try-except语句可以捕获和处理程序运行时的错误。通过合理的异常处理，可以提高程序的健壮性和用户体验。',
+                    tags: ['Python', '异常处理', '编程']
+                },
+                {
+                    title: '异步编程基础',
+                    summary: '异步编程允许程序在等待I/O操作完成时继续执行其他任务，提高程序的效率。在Python中，可以使用async/await语法实现异步编程。',
+                    tags: ['异步编程', 'Python', '性能优化']
+                }
+            ];
+            
+            log(`准备渲染 ${mockCards.length} 张知识卡片`, 'info');
+            
+            // 测试字段提取逻辑
+            mockCards.forEach((card, index) => {
+                log(`卡片${index + 1}数据验证:`, 'info');
+                log(`  - 标题: ${card.title}`, 'info');
+                log(`  - 摘要: ${card.summary.substring(0, 50)}...`, 'info');
+                log(`  - 标签: ${card.tags.join(', ')}`, 'info');
+                
+                // 检查数据完整性
+                if (!card.title || !card.summary) {
+                    log(`  ⚠️ 卡片${index + 1}数据不完整`, 'error');
+                } else {
+                    log(`  ✅ 卡片${index + 1}数据完整`, 'success');
+                }
+            });
+            
+            // 模拟渲染结果
+            const renderResult = mockCards.map(card => ({
+                title: card.title || '未命名卡片',
+                body: card.summary || '无内容',
+                tags: Array.isArray(card.tags) ? card.tags : [],
+                needExpand: (card.summary || '').length > 80
+            }));
+            
+            log('渲染结果:', 'info');
+            renderResult.forEach((result, index) => {
+                log(`  卡片${index + 1}: 标题="${result.title}", 正文长度=${result.body.length}, 需要展开=${result.needExpand}`, 'info');
+            });
+            
+            return renderResult;
+        }
+        
+        function testMockData() {
+            log('开始测试模拟数据...', 'info');
+            
+            const conversation = testDataExtraction();
+            const cards = testCardRendering();
+            
+            // 模拟完整的AI总结流程
+            log('模拟AI总结流程:', 'info');
+            log('1. 提取对话内容 ✅', 'success');
+            log('2. 调用AI服务 ✅', 'success');
+            log('3. 解析返回结果 ✅', 'success');
+            log('4. 渲染知识卡片 ✅', 'success');
+            
+            // 显示预期结果
+            const expectedResults = document.getElementById('expected-results');
+            expectedResults.innerHTML = `
+                <div class="status success">✅ 测试完成！</div>
+                <div class="mock-data">
+                    <h4>预期渲染结果：</h4>
+                    <pre>${JSON.stringify(cards, null, 2)}</pre>
+                </div>
+            `;
+            
+            log('所有测试完成！', 'success');
+        }
+        
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            log('调试页面已加载完成', 'success');
+            log('可以开始测试AI总结功能的各个组件', 'info');
+        });
+    </script>
+</body>
+</html>

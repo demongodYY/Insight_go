@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>收藏功能测试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 16px;
+        }
+        
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .demo-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        
+        .knowledge-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .knowledge-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .knowledge-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+            line-height: 1.4;
+        }
+        
+        .collect-btn {
+            background: #38a169;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            min-width: 80px;
+        }
+        
+        .collect-btn:hover {
+            background: #2f855a;
+            transform: scale(1.05);
+        }
+        
+        .collect-btn.collected {
+            background: #e53e3e;
+        }
+        
+        .collect-btn.collected:hover {
+            background: #c53030;
+        }
+        
+        .card-content {
+            color: #4a5568;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #718096;
+        }
+        
+        .card-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+        
+        .collection-status {
+            background: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-title {
+            font-weight: 600;
+            color: #22543d;
+            margin-bottom: 10px;
+        }
+        
+        .status-content {
+            color: #2f855a;
+            font-size: 14px;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .test-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .test-btn:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+        
+        .test-btn.secondary {
+            background: #718096;
+        }
+        
+        .test-btn.secondary:hover {
+            background: #4a5568;
+        }
+        
+        .local-storage-info {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .local-storage-title {
+            font-weight: 600;
+            color: #c53030;
+            margin-bottom: 10px;
+        }
+        
+        .local-storage-content {
+            color: #742a2a;
+            font-size: 14px;
+            font-family: monospace;
+            background: #fed7d7;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        
+        .feature-list {
+            background: #ebf8ff;
+            border: 1px solid #90cdf4;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        
+        .feature-list h3 {
+            color: #2c5282;
+            margin-bottom: 15px;
+        }
+        
+        .feature-list ul {
+            color: #2a4365;
+            line-height: 1.8;
+        }
+        
+        .feature-list li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 AI知识卡片收藏功能测试</h1>
+            <p>测试改进后的收藏功能，支持云端和本地存储</p>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📚 知识卡片展示</h2>
+            <div class="knowledge-cards">
+                <div class="knowledge-card" data-id="1">
+                    <div class="card-header">
+                        <h3 class="card-title">JavaScript异步编程详解</h3>
+                        <button class="collect-btn" onclick="toggleCollection(this, 1)">
+                            ☆ 收藏
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        JavaScript异步编程是现代Web开发的核心概念，包括Promise、async/await、回调函数等模式。掌握这些技术可以编写更高效的代码。
+                    </div>
+                    <div class="card-meta">
+                        <div class="card-tags">
+                            <span class="tag">JavaScript</span>
+                            <span class="tag">异步编程</span>
+                            <span class="tag">Promise</span>
+                        </div>
+                        <span>2024-01-15</span>
+                    </div>
+                </div>
+                
+                <div class="knowledge-card" data-id="2">
+                    <div class="card-header">
+                        <h3 class="card-title">Python机器学习入门</h3>
+                        <button class="collect-btn" onclick="toggleCollection(this, 2)">
+                            ☆ 收藏
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        机器学习是人工智能的重要分支，使用Python可以快速实现各种机器学习算法，包括监督学习、无监督学习和强化学习。
+                    </div>
+                    <div class="card-meta">
+                        <div class="card-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">机器学习</span>
+                            <span class="tag">AI</span>
+                        </div>
+                        <span>2024-01-14</span>
+                    </div>
+                </div>
+                
+                <div class="knowledge-card" data-id="3">
+                    <div class="card-header">
+                        <h3 class="card-title">React Hooks最佳实践</h3>
+                        <button class="collect-btn" onclick="toggleCollection(this, 3)">
+                            ☆ 收藏
+                        </button>
+                    </div>
+                    <div class="card-content">
+                        React Hooks让函数组件具有状态管理能力，本文介绍useState、useEffect、useContext等常用Hooks的使用技巧和最佳实践。
+                    </div>
+                    <div class="card-meta">
+                        <div class="card-tags">
+                            <span class="tag">React</span>
+                            <span class="tag">Hooks</span>
+                            <span class="tag">前端</span>
+                        </div>
+                        <span>2024-01-13</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🧪 功能测试</h2>
+            <div class="test-buttons">
+                <button class="test-btn" onclick="testCollection()">测试收藏功能</button>
+                <button class="test-btn secondary" onclick="clearLocalStorage()">清空本地存储</button>
+                <button class="test-btn secondary" onclick="showLocalStorage()">查看本地存储</button>
+                <button class="test-btn" onclick="simulateNetworkError()">模拟网络错误</button>
+            </div>
+            
+            <div class="collection-status" id="collection-status">
+                <div class="status-title">📊 收藏状态</div>
+                <div class="status-content">点击收藏按钮开始测试</div>
+            </div>
+        </div>
+        
+        <div class="local-storage-info" id="local-storage-info" style="display: none;">
+            <div class="local-storage-title">💾 本地存储数据</div>
+            <div class="local-storage-content" id="local-storage-content"></div>
+        </div>
+        
+        <div class="feature-list">
+            <h3>✨ 新功能特性</h3>
+            <ul>
+                <li><strong>双重存储支持</strong>：优先使用云端数据库，失败时自动降级到本地存储</li>
+                <li><strong>智能错误处理</strong>：网络错误时提供友好的用户提示，自动保存到本地</li>
+                <li><strong>本地数据同步</strong>：云端操作成功后自动同步到本地存储</li>
+                <li><strong>离线功能支持</strong>：即使没有网络也能正常收藏和管理内容</li>
+                <li><strong>数据去重机制</strong>：避免重复收藏相同内容</li>
+                <li><strong>实时状态更新</strong>：收藏状态立即反映在UI上</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // 模拟收藏数据
+        let collectionData = {
+            1: { collected: false, title: 'JavaScript异步编程详解' },
+            2: { collected: false, title: 'Python机器学习入门' },
+            3: { collected: false, title: 'React Hooks最佳实践' }
+        };
+        
+        // 模拟本地存储
+        let localStorage = {};
+        
+        // 切换收藏状态
+        function toggleCollection(button, cardId) {
+            const card = collectionData[cardId];
+            card.collected = !card.collected;
+            
+            // 更新按钮状态
+            if (card.collected) {
+                button.textContent = '★ 已收藏';
+                button.classList.add('collected');
+                saveToLocalStorage(cardId, card);
+                updateStatus(`✅ "${card.title}" 已收藏到本地存储`);
+            } else {
+                button.textContent = '☆ 收藏';
+                button.classList.remove('collected');
+                removeFromLocalStorage(cardId);
+                updateStatus(`❌ "${card.title}" 已从收藏中移除`);
+            }
+        }
+        
+        // 保存到本地存储
+        function saveToLocalStorage(cardId, card) {
+            const storageKey = 'act-nav-local-library';
+            let libraryData = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            
+            // 检查是否已存在
+            const existingIndex = libraryData.findIndex(item => item.id === cardId);
+            
+            if (existingIndex === -1) {
+                // 新卡片
+                libraryData.push({
+                    id: cardId,
+                    title: card.title,
+                    is_collected: true,
+                    addedToLibrary: new Date().toISOString(),
+                    source: 'demo',
+                    thread_id: 'demo-chat'
+                });
+            } else {
+                // 更新现有卡片
+                libraryData[existingIndex].is_collected = true;
+                libraryData[existingIndex].updatedAt = new Date().toISOString();
+            }
+            
+            localStorage.setItem(storageKey, JSON.stringify(libraryData));
+            console.log('保存到本地存储:', card.title);
+        }
+        
+        // 从本地存储移除
+        function removeFromLocalStorage(cardId) {
+            const storageKey = 'act-nav-local-library';
+            let libraryData = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            
+            libraryData = libraryData.filter(item => item.id !== cardId);
+            localStorage.setItem(storageKey, JSON.stringify(libraryData));
+            console.log('从本地存储移除:', cardId);
+        }
+        
+        // 更新状态显示
+        function updateStatus(message) {
+            const statusElement = document.getElementById('collection-status');
+            const contentElement = statusElement.querySelector('.status-content');
+            contentElement.textContent = message;
+        }
+        
+        // 测试收藏功能
+        function testCollection() {
+            updateStatus('🧪 正在测试收藏功能...');
+            
+            // 模拟收藏所有卡片
+            setTimeout(() => {
+                Object.keys(collectionData).forEach(cardId => {
+                    if (!collectionData[cardId].collected) {
+                        const button = document.querySelector(`[data-id="${cardId}"] .collect-btn`);
+                        toggleCollection(button, parseInt(cardId));
+                    }
+                });
+                updateStatus('✅ 收藏功能测试完成！所有卡片已收藏到本地存储');
+            }, 1000);
+        }
+        
+        // 清空本地存储
+        function clearLocalStorage() {
+            const storageKey = 'act-nav-local-library';
+            localStorage.removeItem(storageKey);
+            
+            // 重置所有收藏状态
+            Object.keys(collectionData).forEach(cardId => {
+                collectionData[cardId].collected = false;
+                const button = document.querySelector(`[data-id="${cardId}"] .collect-btn`);
+                button.textContent = '☆ 收藏';
+                button.classList.remove('collected');
+            });
+            
+            updateStatus('🗑️ 本地存储已清空，所有收藏状态已重置');
+            hideLocalStorageInfo();
+        }
+        
+        // 显示本地存储
+        function showLocalStorage() {
+            const storageKey = 'act-nav-local-library';
+            const data = localStorage.getItem(storageKey);
+            
+            const infoElement = document.getElementById('local-storage-info');
+            const contentElement = document.getElementById('local-storage-content');
+            
+            if (data) {
+                try {
+                    const parsedData = JSON.parse(data);
+                    contentElement.textContent = JSON.stringify(parsedData, null, 2);
+                } catch (e) {
+                    contentElement.textContent = '数据格式错误: ' + e.message;
+                }
+            } else {
+                contentElement.textContent = '本地存储为空';
+            }
+            
+            infoElement.style.display = 'block';
+        }
+        
+        // 隐藏本地存储信息
+        function hideLocalStorageInfo() {
+            document.getElementById('local-storage-info').style.display = 'none';
+        }
+        
+        // 模拟网络错误
+        function simulateNetworkError() {
+            updateStatus('🌐 模拟网络错误场景...');
+            
+            setTimeout(() => {
+                updateStatus('⚠️ 网络连接失败，收藏内容已自动保存到本地存储（离线模式）');
+            }, 1500);
+        }
+        
+        // 初始化页面
+        function initPage() {
+            updateStatus('🚀 页面已加载，可以开始测试收藏功能');
+            
+            // 检查本地存储中已有的收藏
+            const storageKey = 'act-nav-local-library';
+            const data = localStorage.getItem(storageKey);
+            
+            if (data) {
+                try {
+                    const parsedData = JSON.parse(data);
+                    parsedData.forEach(item => {
+                        if (item.is_collected && collectionData[item.id]) {
+                            collectionData[item.id].collected = true;
+                            const button = document.querySelector(`[data-id="${item.id}"] .collect-btn`);
+                            button.textContent = '★ 已收藏';
+                            button.classList.add('collected');
+                        }
+                    });
+                    updateStatus(`📚 从本地存储恢复了 ${parsedData.filter(item => item.is_collected).length} 个收藏`);
+                } catch (e) {
+                    console.error('解析本地存储数据失败:', e);
+                }
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initPage);
+    </script>
+</body>
+</html>

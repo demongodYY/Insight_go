@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Popup布局修复测试</title>
+  <style>
+    /* 复制popup.css的核心样式用于测试 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 320px;
+      min-height: 400px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #374151;
+      background: #ffffff;
+      margin: 20px;
+    }
+
+    .popup-container {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 400px;
+      overflow: hidden;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+    }
+
+    .popup-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+    }
+
+    .popup-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      margin-right: 12px;
+    }
+
+    .popup-title h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #111827;
+      margin-bottom: 2px;
+    }
+
+    .popup-title p {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .popup-status {
+      margin-bottom: 20px;
+      flex-shrink: 0;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      color: #0369a1;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: currentColor;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .status-indicator span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .popup-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      justify-content: center;
+      align-items: stretch;
+      flex-shrink: 0;
+    }
+
+    .stat-item {
+      flex: 1;
+      text-align: center;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      min-width: 120px;
+      width: 120px;
+      flex-shrink: 0;
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: 700;
+      color: #3b82f6;
+      margin-bottom: 4px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6b7280;
+      font-weight: 500;
+    }
+
+    .popup-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-shrink: 0;
+      align-items: stretch;
+    }
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-height: 48px;
+      flex-shrink: 0;
+    }
+
+    .action-btn.primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .action-btn.secondary {
+      background: #f3f4f6;
+      color: #374151;
+      border: 1px solid #d1d5db;
+    }
+
+    .action-btn.library-btn {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+      font-weight: 600;
+    }
+
+    .popup-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .footer-links a {
+      color: #6b7280;
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .version {
+      font-size: 12px;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    /* 测试控制区域 */
+    .test-controls {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .test-controls h3 {
+      margin-bottom: 15px;
+      color: #374151;
+    }
+
+    .test-btn {
+      margin: 5px;
+      padding: 8px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .test-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .test-btn.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <div class="popup-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </div>
+      <div class="popup-title">
+        <h1>即刻导航</h1>
+        <p>AI对话目录</p>
+      </div>
+    </div>
+    
+    <div class="popup-status">
+      <div class="status-indicator active">
+        <div class="status-dot"></div>
+        <span>已在当前页面激活</span>
+      </div>
+    </div>
+    
+    <div class="popup-stats">
+      <div class="stat-item">
+        <div class="stat-number" id="question-count">0</div>
+        <div class="stat-label">对话问题</div>
+      </div>
+    </div>
+    
+    <div class="popup-actions">
+      <button class="action-btn primary" id="open-sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+        打开侧边栏
+      </button>
+      <button class="action-btn secondary" id="clear-data">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+        </svg>
+        清除数据
+      </button>
+      <button class="action-btn library-btn" id="open-library">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 006.5 22h11a2.5 2.5 0 002.5-2.5v-15A2.5 2.5 0 0017.5 2h-11A2.5 2.5 0 004 4.5v15zM8 6h8M8 10h8M8 14h5"/>
+        </svg>
+        <span>我的收藏</span>
+      </button>      
+    </div>
+    
+    <div class="popup-footer">
+      <div class="footer-links">
+        <a href="#" id="feedback-link">反馈问题</a>
+        <span class="separator">•</span>
+        <a href="#" id="github-link">GitHub</a>
+      </div>
+      <div class="version">v1.0.0</div>
+    </div>
+  </div>
+
+  <div class="test-controls">
+    <h3>测试布局稳定性</h3>
+    <p>点击下面的按钮来模拟数字变化，观察按钮尺寸是否保持稳定：</p>
+    <button class="test-btn" onclick="changeNumber('0')">设置为 0</button>
+    <button class="test-btn" onclick="changeNumber('5')">设置为 5</button>
+    <button class="test-btn" onclick="changeNumber('25')">设置为 25</button>
+    <button class="test-btn" onclick="changeNumber('123')">设置为 123</button>
+    <button class="test-btn" onclick="changeNumber('999')">设置为 999</button>
+    <button class="test-btn" onclick="changeNumber('1000')">设置为 1000</button>
+    
+    <div style="margin-top: 15px;">
+      <strong>测试结果：</strong>
+      <div id="test-result" style="margin-top: 10px; padding: 10px; background: #e5f3ff; border-radius: 4px; display: none;">
+        <span id="result-text"></span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function changeNumber(value) {
+      const questionCount = document.getElementById('question-count');
+      const oldValue = questionCount.textContent;
+      
+      // 更新数字
+      questionCount.textContent = value;
+      
+      // 检查按钮尺寸是否变化
+      const buttons = document.querySelectorAll('.action-btn');
+      let sizeChanged = false;
+      
+      // 等待一帧后检查尺寸
+      requestAnimationFrame(() => {
+        buttons.forEach((btn, index) => {
+          const currentWidth = btn.offsetWidth;
+          const currentHeight = btn.offsetHeight;
+          
+          // 如果按钮没有data-original-size，则记录原始尺寸
+          if (!btn.dataset.originalWidth) {
+            btn.dataset.originalWidth = currentWidth;
+            btn.dataset.originalHeight = currentHeight;
+          }
+          
+          // 检查尺寸是否变化
+          if (Math.abs(currentWidth - btn.dataset.originalWidth) > 1 || 
+              Math.abs(currentHeight - btn.dataset.originalHeight) > 1) {
+            sizeChanged = true;
+          }
+        });
+        
+        // 显示测试结果
+        const resultDiv = document.getElementById('test-result');
+        const resultText = document.getElementById('result-text');
+        
+        if (sizeChanged) {
+          resultText.textContent = `❌ 数字从 ${oldValue} 变为 ${value} 时，按钮尺寸发生了变化！`;
+          resultText.style.color = '#dc2626';
+        } else {
+          resultText.textContent = `✅ 数字从 ${oldValue} 变为 ${value} 时，按钮尺寸保持稳定！`;
+          resultText.style.color = '#059669';
+        }
+        
+        resultDiv.style.display = 'block';
+      });
+    }
+
+    // 页面加载完成后自动测试
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        changeNumber('0');
+      }, 100);
+    });
+  </script>
+</body>
+</html>

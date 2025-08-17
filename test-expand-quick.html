@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>展开功能快速测试</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .act-nav-card {
+            background: #fff;
+            border: 1px solid #ebedf0;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 10px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,.04);
+        }
+        
+        .act-nav-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        /* 卡片正文默认 4 行省略 */
+        .act-nav-card-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #4b5563;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+            max-height: 4.8em;
+            transition: max-height 0.3s ease;
+            word-wrap: break-word;
+        }
+        
+        /* 展开状态：不截断 */
+        .act-nav-card[data-expanded="1"] .act-nav-card-text,
+        .act-nav-card.expanded .act-nav-card-text {
+            display: block;
+            overflow: visible;
+            -webkit-line-clamp: initial;
+            line-clamp: initial;
+            max-height: none;
+        }
+        
+        .act-nav-expand-btn {
+            display: inline-block;
+            margin: 8px 0 4px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: #e5e7eb;
+            font-size: 13px;
+            color: #111827;
+            cursor: pointer;
+            border: 0;
+        }
+        
+        .act-nav-expand-btn:hover {
+            background: #d1d5db;
+        }
+        
+        .debug-info {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>展开功能快速测试</h1>
+        
+        <div class="test-button" onclick="createTestCard()">创建测试卡片</div>
+        <div class="test-button" onclick="checkAllCards()">检查所有卡片状态</div>
+        
+        <div class="debug-info">
+            <strong>测试说明：</strong><br>
+            1. 点击"创建测试卡片"生成一个长文本卡片<br>
+            2. 观察是否显示"展开全文"按钮<br>
+            3. 点击按钮测试展开/收起功能<br>
+            4. 点击"检查所有卡片状态"查看调试信息
+        </div>
+        
+        <div id="cards-container"></div>
+        
+        <div class="debug-info" id="debug-output">
+            等待测试...
+        </div>
+    </div>
+    
+    <script>
+        let cardCounter = 0;
+        
+        function createTestCard() {
+            const container = document.getElementById('cards-container');
+            cardCounter++;
+            
+            const longText = `这是第${cardCounter}张测试卡片，包含很长的文本内容。这段文本应该超过80个字符，这样就能触发展开按钮的显示。当文本内容足够长时，系统会自动判断需要显示"展开全文"按钮，让用户可以选择查看完整内容或者只看到前4行的摘要。这是一个非常重要的功能，让用户可以在有限的空间内快速浏览卡片概要，需要时再展开查看完整内容。`;
+            
+            const needExpand = longText.length > 80;
+            
+            const cardHtml = `
+                <div class="act-nav-card" data-card-idx="${cardCounter}" data-expanded="0">
+                    <div class="act-nav-card-title">测试卡片 ${cardCounter}</div>
+                    <div class="act-nav-card-body">
+                        <div class="act-nav-card-text">${longText}</div>
+                        ${needExpand ? `<button class="act-nav-expand-btn" onclick="toggleExpand(this)">展开全文</button>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', cardHtml);
+            
+            // 绑定展开事件
+            const newCard = container.lastElementChild;
+            const expandBtn = newCard.querySelector('.act-nav-expand-btn');
+            if (expandBtn) {
+                expandBtn.addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    toggleExpand(ev.target);
+                });
+            }
+            
+            updateDebugInfo();
+        }
+        
+        function toggleExpand(btn) {
+            const cardEl = btn.closest('.act-nav-card');
+            if (!cardEl) return;
+            
+            const expanded = cardEl.getAttribute('data-expanded') === '1';
+            const newState = expanded ? '0' : '1';
+            
+            // 设置新的展开状态
+            cardEl.setAttribute('data-expanded', newState);
+            
+            // 同时设置CSS类，确保兼容性
+            if (newState === '1') {
+                cardEl.classList.add('expanded');
+            } else {
+                cardEl.classList.remove('expanded');
+            }
+            
+            // 更新按钮文字
+            btn.textContent = expanded ? '展开全文' : '收起';
+            
+            // 调试信息
+            console.log('展开状态切换:', {
+                cardId: cardEl.querySelector('.act-nav-card-title')?.textContent || '未知卡片',
+                oldState: expanded ? '展开' : '收起',
+                newState: newState === '1' ? '展开' : '收起',
+                dataExpanded: cardEl.getAttribute('data-expanded'),
+                hasExpandedClass: cardEl.classList.contains('expanded')
+            });
+            
+            updateDebugInfo();
+        }
+        
+        function checkAllCards() {
+            const cards = document.querySelectorAll('.act-nav-card');
+            const debugInfo = [];
+            
+            cards.forEach((card, index) => {
+                const title = card.querySelector('.act-nav-card-title')?.textContent || '未知卡片';
+                const expanded = card.getAttribute('data-expanded') === '1';
+                const hasExpandedClass = card.classList.contains('expanded');
+                const expandBtn = card.querySelector('.act-nav-expand-btn');
+                const btnText = expandBtn ? expandBtn.textContent : '无按钮';
+                
+                debugInfo.push(`卡片${index + 1}: ${title}`);
+                debugInfo.push(`  data-expanded: "${card.getAttribute('data-expanded')}"`);
+                debugInfo.push(`  expanded类: ${hasExpandedClass ? '是' : '否'}`);
+                debugInfo.push(`  展开按钮: ${btnText}`);
+                debugInfo.push(`  展开状态: ${expanded ? '展开' : '收起'}`);
+                debugInfo.push('');
+            });
+            
+            document.getElementById('debug-output').textContent = debugInfo.join('\n');
+        }
+        
+        function updateDebugInfo() {
+            checkAllCards();
+        }
+        
+        // 页面加载完成后创建一张测试卡片
+        document.addEventListener('DOMContentLoaded', () => {
+            createTestCard();
+        });
+    </script>
+</body>
+</html>

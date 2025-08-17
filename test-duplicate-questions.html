@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>重复问题记录测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .test-button:hover {
+      background: #0056b3;
+    }
+    .test-button.success {
+      background: #28a745;
+    }
+    .test-button.success:hover {
+      background: #218838;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+      background: #e9ecef;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .question-list {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .question-item {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 5px 0;
+      font-size: 12px;
+    }
+    .question-id {
+      color: #6c757d;
+      font-weight: bold;
+    }
+    .question-text {
+      color: #495057;
+      margin: 5px 0;
+    }
+    .question-time {
+      color: #6c757d;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>重复问题记录测试</h1>
+  
+  <div class="test-section">
+    <h2>测试说明</h2>
+    <p>这个页面用于测试插件的重复问题记录功能。修改后的插件应该能够记录所有问题，即使内容相同。</p>
+    <ol>
+      <li>点击"添加相同问题"按钮多次，添加相同内容的问题</li>
+      <li>点击"添加不同问题"按钮，添加不同内容的问题</li>
+      <li>观察问题列表，验证是否所有问题都被记录</li>
+      <li>检查控制台日志，了解问题添加过程</li>
+    </ol>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作按钮</h2>
+    <button class="test-button" onclick="addSameQuestion()">添加相同问题</button>
+    <button class="test-button" onclick="addDifferentQuestion()">添加不同问题</button>
+    <button class="test-button" onclick="clearQuestions()">清空问题列表</button>
+    <button class="test-button" onclick="checkQuestions()">检查问题列表</button>
+    <button class="test-button" onclick="clearLog()">清空日志</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>当前状态</h2>
+    <div id="status" class="status">等待操作...</div>
+  </div>
+  
+  <div class="test-section">
+    <h2>问题列表</h2>
+    <div id="question-list" class="question-list">
+      <p>暂无问题</p>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作日志</h2>
+    <div id="log" class="log"></div>
+  </div>
+  
+  <script>
+    // 模拟插件的问题管理
+    let questions = [];
+    let questionCounter = 1;
+    
+    // 日志函数
+    function log(message, type = 'info') {
+      const logElement = document.getElementById('log');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.innerHTML = `[${timestamp}] ${message}`;
+      logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#6c757d';
+      logElement.appendChild(logEntry);
+      logElement.scrollTop = logElement.scrollHeight;
+      console.log(`[${timestamp}] ${message}`);
+    }
+    
+    // 更新状态显示
+    function updateStatus(message, type = 'info') {
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = message;
+      statusElement.className = `status ${type}`;
+    }
+    
+    // 生成问题ID
+    function generateQuestionId() {
+      const timestamp = Date.now();
+      const randomPart = Math.random().toString(36).substr(2, 9);
+      return `act-nav-${timestamp}-${randomPart}`;
+    }
+    
+    // 截断文本
+    function truncateText(text, maxLength) {
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
+    }
+    
+    // 添加相同内容的问题
+    function addSameQuestion() {
+      const questionText = "这是一个测试问题，内容完全相同";
+      
+      log(`准备添加相同问题: ${questionText}`);
+      
+      const question = {
+        id: generateQuestionId(),
+        text: truncateText(questionText, 50),
+        fullText: questionText,
+        timestamp: Date.now(),
+        chatId: 'test-chat'
+      };
+      
+      questions.push(question);
+      
+      log(`问题已添加到目录: ${question.id}`, 'success');
+      updateStatus(`已添加第 ${questions.length} 个问题`, 'success');
+      
+      updateQuestionList();
+    }
+    
+    // 添加不同内容的问题
+    function addDifferentQuestion() {
+      const questionText = `这是第 ${questionCounter} 个不同的测试问题，内容各不相同`;
+      
+      log(`准备添加不同问题: ${questionText}`);
+      
+      const question = {
+        id: generateQuestionId(),
+        text: truncateText(questionText, 50),
+        fullText: questionText,
+        timestamp: Date.now(),
+        chatId: 'test-chat'
+      };
+      
+      questions.push(question);
+      questionCounter++;
+      
+      log(`问题已添加到目录: ${question.id}`, 'success');
+      updateStatus(`已添加第 ${questions.length} 个问题`, 'success');
+      
+      updateQuestionList();
+    }
+    
+    // 清空问题列表
+    function clearQuestions() {
+      questions = [];
+      questionCounter = 1;
+      log('问题列表已清空', 'success');
+      updateStatus('问题列表已清空', 'success');
+      updateQuestionList();
+    }
+    
+    // 检查问题列表
+    function checkQuestions() {
+      log(`检查问题列表，当前共有 ${questions.length} 个问题`);
+      
+      if (questions.length === 0) {
+        log('问题列表为空');
+        return;
+      }
+      
+      // 检查是否有重复内容的问题
+      const contentMap = new Map();
+      let duplicateCount = 0;
+      
+      questions.forEach((q, index) => {
+        if (contentMap.has(q.fullText)) {
+          duplicateCount++;
+          log(`发现重复内容问题: 索引 ${index} 和 ${contentMap.get(q.fullText)} 内容相同`);
+        } else {
+          contentMap.set(q.fullText, index);
+        }
+      });
+      
+      if (duplicateCount > 0) {
+        log(`共发现 ${duplicateCount} 个重复内容的问题`, 'success');
+        updateStatus(`发现 ${duplicateCount} 个重复内容的问题，验证了重复记录功能`, 'success');
+      } else {
+        log('没有发现重复内容的问题');
+        updateStatus('没有发现重复内容的问题', 'info');
+      }
+    }
+    
+    // 更新问题列表显示
+    function updateQuestionList() {
+      const questionListElement = document.getElementById('question-list');
+      
+      if (questions.length === 0) {
+        questionListElement.innerHTML = '<p>暂无问题</p>';
+        return;
+      }
+      
+      questionListElement.innerHTML = questions.map((q, index) => `
+        <div class="question-item">
+          <div class="question-id">#${index + 1} - ${q.id}</div>
+          <div class="question-text">${q.text}</div>
+          <div class="question-time">${new Date(q.timestamp).toLocaleTimeString()}</div>
+        </div>
+      `).join('');
+    }
+    
+    // 清空日志
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+      log('日志已清空');
+    }
+    
+    // 页面加载时初始化
+    window.addEventListener('load', () => {
+      log('页面加载完成，开始测试重复问题记录功能');
+      updateStatus('准备测试重复问题记录功能', 'info');
+    });
+    
+    // 页面卸载前保存状态
+    window.addEventListener('beforeunload', () => {
+      log('页面即将卸载');
+    });
+  </script>
+</body>
+</html>

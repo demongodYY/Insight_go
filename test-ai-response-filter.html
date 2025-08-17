@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI回答过滤测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .test-button:hover {
+      background: #0056b3;
+    }
+    .test-button.success {
+      background: #28a745;
+    }
+    .test-button.success:hover {
+      background: #218838;
+    }
+    .test-button.warning {
+      background: #ffc107;
+      color: #212529;
+    }
+    .test-button.warning:hover {
+      background: #e0a800;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+      background: #e9ecef;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .status.warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    .log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .message-container {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .user-message {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      position: relative;
+    }
+    .user-message::before {
+      content: "👤 用户消息";
+      position: absolute;
+      top: -8px;
+      left: 10px;
+      background: #2196f3;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+    .ai-response {
+      background: #f3e5f5;
+      border: 1px solid #9c27b0;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      position: relative;
+    }
+    .ai-response::before {
+      content: "🤖 AI回答";
+      position: absolute;
+      top: -8px;
+      left: 10px;
+      background: #9c27b0;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+    .message-content {
+      margin-top: 15px;
+    }
+    .code-block {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      font-family: monospace;
+      margin: 10px 0;
+    }
+    .markdown-content {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>AI回答过滤测试</h1>
+  
+  <div class="test-section">
+    <h2>测试说明</h2>
+    <p>这个页面用于测试插件的AI回答过滤功能。现在插件应该能够：</p>
+    <ol>
+      <li>正确识别用户消息和AI回答</li>
+      <li>只处理用户消息，跳过AI回答</li>
+      <li>避免AI回答时重复提取问题</li>
+    </ol>
+  </div>
+  
+  <div class="test-section">
+    <h2>模拟消息元素</h2>
+    <div class="message-container">
+      <h3>DeepSeek 平台消息</h3>
+      
+      <div class="user-message" id="deepseek-user">
+        <div class="message-content">
+          <div class="fbb737a4">这是一个用户问题：8+1等于多少？</div>
+        </div>
+      </div>
+      
+      <div class="ai-response" id="deepseek-ai">
+        <div class="message-content">
+          <div class="ds-markdown-paragraph">
+            <p>8+1等于9。</p>
+            <div class="code-block">
+              <code>8 + 1 = 9</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="message-container">
+      <h3>Kimi 平台消息</h3>
+      
+      <div class="user-message" id="kimi-user">
+        <div class="message-content">
+          <div class="user-content">这是另一个用户问题：什么是人工智能？</div>
+        </div>
+      </div>
+      
+      <div class="ai-response" id="kimi-ai">
+        <div class="message-content">
+          <div class="markdown-body">
+            <p>人工智能（AI）是计算机科学的一个分支...</p>
+            <div class="code-block">
+              <code>AI = Artificial Intelligence</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作按钮</h2>
+    <button class="test-button" onclick="testDeepSeekUser()">测试DeepSeek用户消息</button>
+    <button class="test-button" onclick="testDeepSeekAI()">测试DeepSeek AI回答</button>
+    <button class="test-button" onclick="testKimiUser()">测试Kimi用户消息</button>
+    <button class="test-button" onclick="testKimiAI()">测试Kimi AI回答</button>
+    <button class="test-button" onclick="testGenericMessage()">测试通用消息</button>
+    <button class="test-button" onclick="clearLog()">清空日志</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>当前状态</h2>
+    <div id="status" class="status">等待操作...</div>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作日志</h2>
+    <div id="log" class="log"></div>
+  </div>
+  
+  <script>
+    // 模拟插件的消息检测逻辑
+    const config = {
+      userMessageSelector: '.fbb737a4, .user-content, .chat-item-content',
+      inputSelectors: ['textarea', '[contenteditable="true"]'],
+      submitSelectors: ['button[type="submit"]']
+    };
+    
+    // 日志函数
+    function log(message, type = 'info') {
+      const logElement = document.getElementById('log');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.innerHTML = `[${timestamp}] ${message}`;
+      logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#6c757d';
+      logElement.appendChild(logEntry);
+      logElement.scrollTop = logElement.scrollHeight;
+      console.log(`[${timestamp}] ${message}`);
+    }
+    
+    // 更新状态显示
+    function updateStatus(message, type = 'info') {
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = message;
+      statusElement.className = `status ${type}`;
+    }
+    
+    // 检查是否是AI回答
+    function isAIResponse(messageElement) {
+      const hostname = 'deepseek.com'; // 模拟DeepSeek环境
+      
+      // 对于deepseek，检查是否包含AI回答的特征
+      if (messageElement.querySelector('.ds-markdown-paragraph')) {
+        return true;
+      }
+      
+      if (messageElement.querySelector('.markdown')) {
+        return true;
+      }
+      
+      if (messageElement.querySelector('pre, code')) {
+        return true;
+      }
+      
+      // 检查是否包含AI回答的特定属性或类名
+      if (messageElement.hasAttribute('data-role') && messageElement.getAttribute('data-role') === 'assistant') {
+        return true;
+      }
+      
+      // 检查是否包含AI回答的特定类名
+      if (messageElement.classList.contains('assistant') || messageElement.classList.contains('ai-response')) {
+        return true;
+      }
+      
+      // 检查是否包含AI回答的特定结构（非用户消息的特征）
+      if (messageElement.querySelector('.ds-markdown-paragraph, .markdown, pre, code')) {
+        return true;
+      }
+      
+      // 通用检测：如果包含代码块、markdown等特征，认为是AI回答
+      if (messageElement.querySelector('pre, code, .markdown, .markdown-body')) {
+        return true;
+      }
+      
+      // 检查是否包含AI回答的通用特征
+      if (messageElement.hasAttribute('data-role') && messageElement.getAttribute('data-role') === 'assistant') {
+        return true;
+      }
+      
+      // 检查是否包含AI回答的通用类名
+      if (messageElement.classList.contains('assistant') || messageElement.classList.contains('ai-response') || 
+          messageElement.classList.contains('bot') || messageElement.classList.contains('gpt')) {
+        return true;
+      }
+      
+      return false;
+    }
+    
+    // 检查是否是用户消息
+    function isUserMessage(messageElement) {
+      const hostname = 'deepseek.com'; // 模拟DeepSeek环境
+      
+      // 对于deepseek，检查是否包含用户消息的特征
+      if (messageElement.classList.contains('fbb737a4')) {
+        return true;
+      }
+      
+      if (messageElement.hasAttribute('data-role') && messageElement.getAttribute('data-role') === 'user') {
+        return true;
+      }
+      
+      if (messageElement.classList.contains('user') || messageElement.classList.contains('user-message')) {
+        return true;
+      }
+      
+      if (messageElement.querySelector('.user-content, .user-message')) {
+        return true;
+      }
+      
+      // 通用检测：检查是否包含用户消息的通用特征
+      if (messageElement.hasAttribute('data-role') && messageElement.getAttribute('data-role') === 'user') {
+        return true;
+      }
+      
+      if (messageElement.classList.contains('user') || messageElement.classList.contains('user-message') || 
+          messageElement.classList.contains('user-content')) {
+        return true;
+      }
+      
+      if (messageElement.querySelector('.user-content, .user-message, .user')) {
+        return true;
+      }
+      
+      return false;
+    }
+    
+    // 模拟processUserMessage方法
+    function processUserMessage(messageElement) {
+      log(`开始处理消息元素: ${messageElement.id}`);
+      
+      // 检查是否是AI回答，如果是则跳过处理
+      if (isAIResponse(messageElement)) {
+        log('检测到AI回答，跳过处理', 'warning');
+        return;
+      }
+      
+      // 额外检查：如果消息元素包含用户消息的特征，则认为是用户消息
+      if (isUserMessage(messageElement)) {
+        log('确认是用户消息，继续处理', 'success');
+      } else {
+        log('无法确定消息类型，跳过处理', 'warning');
+        return;
+      }
+      
+      // 提取消息文本
+      const messageText = messageElement.textContent || messageElement.innerText;
+      if (!messageText || !messageText.trim()) {
+        log('消息文本为空，跳过处理', 'warning');
+        return;
+      }
+      
+      log(`准备处理用户消息: ${messageText.substring(0, 50)}...`, 'success');
+      log(`消息元素ID: ${messageElement.id}`, 'info');
+      log(`消息元素类名: ${messageElement.className}`, 'info');
+    }
+    
+    // 测试DeepSeek用户消息
+    function testDeepSeekUser() {
+      log('=== 测试DeepSeek用户消息 ===', 'info');
+      const userElement = document.getElementById('deepseek-user');
+      processUserMessage(userElement);
+      updateStatus('DeepSeek用户消息测试完成', 'success');
+    }
+    
+    // 测试DeepSeek AI回答
+    function testDeepSeekAI() {
+      log('=== 测试DeepSeek AI回答 ===', 'info');
+      const aiElement = document.getElementById('deepseek-ai');
+      processUserMessage(aiElement);
+      updateStatus('DeepSeek AI回答测试完成', 'success');
+    }
+    
+    // 测试Kimi用户消息
+    function testKimiUser() {
+      log('=== 测试Kimi用户消息 ===', 'info');
+      const userElement = document.getElementById('kimi-user');
+      processUserMessage(userElement);
+      updateStatus('Kimi用户消息测试完成', 'success');
+    }
+    
+    // 测试Kimi AI回答
+    function testKimiAI() {
+      log('=== 测试Kimi AI回答 ===', 'info');
+      const aiElement = document.getElementById('kimi-ai');
+      processUserMessage(aiElement);
+      updateStatus('Kimi AI回答测试完成', 'success');
+    }
+    
+    // 测试通用消息
+    function testGenericMessage() {
+      log('=== 测试通用消息 ===', 'info');
+      
+      // 创建一个通用的消息元素
+      const genericElement = document.createElement('div');
+      genericElement.id = 'generic-message';
+      genericElement.className = 'generic-message';
+      genericElement.textContent = '这是一个通用消息，没有特定的特征';
+      
+      processUserMessage(genericElement);
+      updateStatus('通用消息测试完成', 'success');
+    }
+    
+    // 清空日志
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+      log('日志已清空');
+    }
+    
+    // 页面加载时初始化
+    window.addEventListener('load', () => {
+      log('页面加载完成，开始测试AI回答过滤功能');
+      updateStatus('准备测试AI回答过滤功能', 'info');
+    });
+  </script>
+</body>
+</html>

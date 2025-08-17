@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>豆包平台重复问题预防测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    .test-button:hover {
+      background: #0056b3;
+    }
+    .test-button.success {
+      background: #28a745;
+    }
+    .test-button.success:hover {
+      background: #218838;
+    }
+    .test-button.warning {
+      background: #ffc107;
+      color: #212529;
+    }
+    .test-button.warning:hover {
+      background: #e0a800;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 4px;
+      background: #e9ecef;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .status.warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    .log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .question-list {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .question-item {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 8px;
+      margin: 5px 0;
+      font-size: 12px;
+    }
+    .question-id {
+      color: #6c757d;
+      font-weight: bold;
+    }
+    .question-text {
+      color: #495057;
+      margin: 5px 0;
+    }
+    .question-time {
+      color: #6c757d;
+      font-size: 10px;
+    }
+    .input-area {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .input-box {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .submit-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .submit-btn:hover {
+      background: #0056b3;
+    }
+    .message-container {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+    .user-message {
+      background: #e3f2fd;
+      border: 1px solid #2196f3;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      position: relative;
+    }
+    .user-message::before {
+      content: "👤 豆包用户消息";
+      position: absolute;
+      top: -8px;
+      left: 10px;
+      background: #2196f3;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+    .ai-response {
+      background: #f3e5f5;
+      border: 1px solid #9c27b0;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 10px 0;
+      position: relative;
+    }
+    .ai-response::before {
+      content: "🤖 豆包AI回答";
+      position: absolute;
+      top: -8px;
+      left: 10px;
+      background: #9c27b0;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>豆包平台重复问题预防测试</h1>
+  
+  <div class="test-section">
+    <h2>测试说明</h2>
+    <p>这个页面专门用于测试豆包平台的重复问题预防功能。现在插件应该能够：</p>
+    <ol>
+      <li>正确识别豆包平台的用户消息和AI回答</li>
+      <li>避免同一个问题被重复提取</li>
+      <li>使用豆包平台特定的重复预防机制</li>
+    </ol>
+  </div>
+  
+  <div class="test-section">
+    <h2>模拟豆包平台消息元素</h2>
+    <div class="message-container">
+      <h3>豆包平台消息结构</h3>
+      
+      <div class="user-message" id="doubao-user-1">
+        <div class="container-ZzKwSY bg-s-color-bg-trans rounded-s-radius-s text-s-color-text-primary">
+          <div data-testid="message_text_content">这是第一个用户问题：什么是人工智能？</div>
+        </div>
+      </div>
+      
+      <div class="ai-response" id="doubao-ai-1">
+        <div class="markdown">
+          <p>人工智能（AI）是计算机科学的一个分支...</p>
+          <pre><code>AI = Artificial Intelligence</code></pre>
+        </div>
+      </div>
+      
+      <div class="user-message" id="doubao-user-2">
+        <div class="container-ZzKwSY bg-s-color-bg-trans rounded-s-radius-s text-s-color-text-primary">
+          <div data-testid="message_text_content">这是第二个用户问题：如何学习编程？</div>
+        </div>
+      </div>
+      
+      <div class="ai-response" id="doubao-ai-2">
+        <div class="markdown">
+          <p>学习编程需要掌握基础知识...</p>
+          <pre><code>console.log("Hello World");</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>模拟问题输入</h2>
+    <div class="input-area">
+      <textarea class="input-box" id="questionInput" placeholder="请输入您的问题..."></textarea>
+      <button class="submit-btn" onclick="submitQuestion()">提交问题</button>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作按钮</h2>
+    <button class="test-button" onclick="testDoubaoUserMessage()">测试豆包用户消息识别</button>
+    <button class="test-button" onclick="testDoubaoAIResponse()">测试豆包AI回答识别</button>
+    <button class="test-button" onclick="simulateDOMChange()">模拟DOM变化</button>
+    <button class="test-button" onclick="simulateChatSwitch()">模拟对话切换</button>
+    <button class="test-button" onclick="addSameQuestion()">添加相同问题</button>
+    <button class="test-button" onclick="checkQuestions()">检查问题列表</button>
+    <button class="test-button" onclick="clearQuestions()">清空问题列表</button>
+    <button class="test-button" onclick="clearLog()">清空日志</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>当前状态</h2>
+    <div id="status" class="status">等待操作...</div>
+  </div>
+  
+  <div class="test-section">
+    <h2>问题列表</h2>
+    <div id="question-list" class="question-list">
+      <p>暂无问题</p>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>操作日志</h2>
+    <div id="log" class="log"></div>
+  </div>
+  
+  <script>
+    // 模拟豆包平台的问题管理
+    let questions = [];
+    let questionCounter = 1;
+    let pendingQuestionText = null;
+    let pendingQuestionTimestamp = null;
+    let recentlyProcessedQuestions = null;
+    
+    // 日志函数
+    function log(message, type = 'info') {
+      const logElement = document.getElementById('log');
+      const timestamp = new Date().toLocaleTimeString();
+      const logEntry = document.createElement('div');
+      logEntry.innerHTML = `[${timestamp}] ${message}`;
+      logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : type === 'warning' ? '#ffc107' : '#6c757d';
+      logElement.appendChild(logEntry);
+      logElement.scrollTop = logElement.scrollHeight;
+      console.log(`[${timestamp}] ${message}`);
+    }
+    
+    // 更新状态显示
+    function updateStatus(message, type = 'info') {
+      const statusElement = document.getElementById('status');
+      statusElement.textContent = message;
+      statusElement.className = `status ${type}`;
+    }
+    
+    // 生成问题ID
+    function generateQuestionId() {
+      const timestamp = Date.now();
+      const randomPart = Math.random().toString(36).substr(2, 9);
+      return `act-nav-${timestamp}-${randomPart}`;
+    }
+    
+    // 截断文本
+    function truncateText(text, maxLength) {
+      if (text.length <= maxLength) return text;
+      return text.substring(0, maxLength) + '...';
+    }
+    
+    // 检查是否是AI回答（豆包平台）
+    function isAIResponse(messageElement) {
+      // 对于豆包，检查是否包含AI回答的特征
+      if (messageElement.querySelector('.markdown, .markdown-body')) {
+        return true;
+      }
+      
+      if (messageElement.querySelector('pre, code')) {
+        return true;
+      }
+      
+      if (messageElement.hasAttribute('data-role') && messageElement.getAttribute('data-role') === 'assistant') {
+        return true;
+      }
+      
+      return false;
+    }
+    
+    // 检查是否是用户消息（豆包平台）
+    function isUserMessage(messageElement) {
+      // 对于豆包，检查是否包含用户消息的特征
+      if (messageElement.hasAttribute('data-testid') && messageElement.getAttribute('data-testid') === 'message_text_content') {
+        return true;
+      }
+      
+      if (messageElement.hasAttribute('data-role') && messageElement.getAttribute('data-role') === 'user') {
+        return true;
+      }
+      
+      if (messageElement.classList.contains('user') || messageElement.classList.contains('user-message') || 
+          messageElement.classList.contains('user-content') || messageElement.classList.contains('container-ZzKwSY')) {
+        return true;
+      }
+      
+      if (messageElement.querySelector('.user-content, .user-message, .user, .container-ZzKwSY')) {
+        return true;
+      }
+      
+      return false;
+    }
+    
+    // 提交问题（模拟handleQuestionSubmit）
+    function submitQuestion() {
+      const inputBox = document.getElementById('questionInput');
+      const questionText = inputBox.value.trim();
+      
+      if (!questionText) {
+        log('请输入问题内容', 'warning');
+        return;
+      }
+      
+      log(`准备添加新问题: ${questionText}`);
+      
+      // 设置待处理标记，防止重复处理
+      pendingQuestionText = questionText;
+      pendingQuestionTimestamp = Date.now();
+      
+      // 模拟延迟处理
+      setTimeout(() => {
+        addQuestion(questionText);
+        
+        // 清除待处理标记
+        pendingQuestionText = null;
+        pendingQuestionTimestamp = null;
+        
+        // 清空输入框
+        inputBox.value = '';
+      }, 100);
+    }
+    
+    // 模拟DOM变化（模拟processUserMessage）
+    function simulateDOMChange() {
+      const questionText = "这是通过DOM变化检测到的问题";
+      
+      // 检查是否已经有待处理的问题，避免重复处理
+      if (pendingQuestionText && pendingQuestionTimestamp) {
+        const timeDiff = Date.now() - pendingQuestionTimestamp;
+        const textMatch = pendingQuestionText.trim() === questionText.trim();
+        
+        // 如果时间差小于2秒且文本匹配，说明这是同一个问题，跳过处理
+        if (timeDiff < 2000 && textMatch) {
+          log(`跳过重复处理的问题: ${questionText} (已有待处理的问题)`, 'warning');
+          return;
+        }
+      }
+      
+      // 豆包平台的特殊处理：检查最近是否已经处理过相同内容的问题
+      if (recentlyProcessedQuestions && recentlyProcessedQuestions.has(questionText.trim())) {
+        log(`豆包平台：跳过最近已处理的问题: ${questionText}`, 'warning');
+        return;
+      }
+      
+      log(`准备处理用户消息: ${questionText.substring(0, 50)}...`);
+      addQuestion(questionText);
+    }
+    
+    // 模拟对话切换
+    function simulateChatSwitch() {
+      log('模拟对话切换...', 'warning');
+      
+      // 保存当前问题到会话存储
+      if (questions.length > 0) {
+        const sessionKey = 'act-nav-session-questions-old-chat';
+        const questionsData = questions.map(q => ({
+          id: q.id,
+          text: q.text,
+          fullText: q.fullText,
+          timestamp: q.timestamp,
+          chatId: 'old-chat'
+        }));
+        
+        sessionStorage.setItem(sessionKey, JSON.stringify(questionsData));
+        log(`保存旧对话的 ${questions.length} 个问题到会话存储`, 'success');
+      }
+      
+      // 清空问题列表
+      questions = [];
+      
+      // 重置防止重复处理的标记
+      pendingQuestionText = null;
+      pendingQuestionTimestamp = null;
+      log('对话切换时已重置重复处理标记', 'success');
+      
+      // 重置豆包平台的重复处理记录
+      if (recentlyProcessedQuestions) {
+        recentlyProcessedQuestions.clear();
+        log('对话切换时已清空豆包平台重复处理记录', 'success');
+      }
+      
+      // 更新显示
+      updateQuestionList();
+      updateStatus('对话已切换，问题列表已清空', 'success');
+    }
+    
+    // 添加相同内容的问题
+    function addSameQuestion() {
+      const questionText = "这是相同内容的问题";
+      
+      log(`准备添加相同问题: ${questionText}`);
+      addQuestion(questionText);
+    }
+    
+    // 添加问题到列表
+    function addQuestion(text) {
+      const question = {
+        id: generateQuestionId(),
+        text: truncateText(text, 50),
+        fullText: text,
+        timestamp: Date.now(),
+        chatId: 'doubao-chat'
+      };
+      
+      questions.push(question);
+      
+      log(`问题已添加到目录: ${question.id}`, 'success');
+      updateStatus(`已添加第 ${questions.length} 个问题`, 'success');
+      
+      // 豆包平台：记录最近处理的问题，防止重复处理
+      if (!recentlyProcessedQuestions) {
+        recentlyProcessedQuestions = new Map();
+      }
+      recentlyProcessedQuestions.set(text.trim(), Date.now());
+      
+      // 清理超过5秒的记录
+      setTimeout(() => {
+        if (recentlyProcessedQuestions) {
+          const now = Date.now();
+          for (const [text, timestamp] of recentlyProcessedQuestions.entries()) {
+            if (now - timestamp > 5000) {
+              recentlyProcessedQuestions.delete(text);
+            }
+          }
+        }
+      }, 5000);
+      
+      updateQuestionList();
+    }
+    
+    // 测试豆包用户消息识别
+    function testDoubaoUserMessage() {
+      log('=== 测试豆包用户消息识别 ===', 'info');
+      const userElement = document.getElementById('doubao-user-1');
+      
+      if (isUserMessage(userElement)) {
+        log('✅ 豆包用户消息识别成功', 'success');
+        updateStatus('豆包用户消息识别测试通过', 'success');
+      } else {
+        log('❌ 豆包用户消息识别失败', 'error');
+        updateStatus('豆包用户消息识别测试失败', 'error');
+      }
+    }
+    
+    // 测试豆包AI回答识别
+    function testDoubaoAIResponse() {
+      log('=== 测试豆包AI回答识别 ===', 'info');
+      const aiElement = document.getElementById('doubao-ai-1');
+      
+      if (isAIResponse(aiElement)) {
+        log('✅ 豆包AI回答识别成功', 'success');
+        updateStatus('豆包AI回答识别测试通过', 'success');
+      } else {
+        log('❌ 豆包AI回答识别失败', 'error');
+        updateStatus('豆包AI回答识别测试失败', 'error');
+      }
+    }
+    
+    // 检查问题列表
+    function checkQuestions() {
+      log(`检查问题列表，当前共有 ${questions.length} 个问题`);
+      
+      if (questions.length === 0) {
+        log('问题列表为空');
+        return;
+      }
+      
+      // 检查是否有重复内容的问题
+      const contentMap = new Map();
+      let duplicateCount = 0;
+      
+      questions.forEach((q, index) => {
+        if (contentMap.has(q.fullText)) {
+          duplicateCount++;
+          log(`发现重复内容问题: 索引 ${index} 和 ${contentMap.get(q.fullText)} 内容相同`);
+        } else {
+          contentMap.set(q.fullText, index);
+        }
+      });
+      
+      if (duplicateCount > 0) {
+        log(`共发现 ${duplicateCount} 个重复内容的问题`, 'success');
+        updateStatus(`发现 ${duplicateCount} 个重复内容的问题，验证了重复记录功能`, 'success');
+      } else {
+        log('没有发现重复内容的问题');
+        updateStatus('没有发现重复内容的问题', 'info');
+      }
+    }
+    
+    // 清空问题列表
+    function clearQuestions() {
+      questions = [];
+      questionCounter = 1;
+      
+      // 重置防止重复处理的标记
+      pendingQuestionText = null;
+      pendingQuestionTimestamp = null;
+      
+      // 重置豆包平台的重复处理记录
+      if (recentlyProcessedQuestions) {
+        recentlyProcessedQuestions.clear();
+        log('豆包平台重复处理记录已清空', 'success');
+      }
+      
+      log('问题列表已清空，重复处理标记已重置', 'success');
+      updateStatus('问题列表已清空', 'success');
+      updateQuestionList();
+    }
+    
+    // 更新问题列表显示
+    function updateQuestionList() {
+      const questionListElement = document.getElementById('question-list');
+      
+      if (questions.length === 0) {
+        questionListElement.innerHTML = '<p>暂无问题</p>';
+        return;
+      }
+      
+      questionListElement.innerHTML = questions.map((q, index) => `
+        <div class="question-item">
+          <div class="question-id">#${index + 1} - ${q.id}</div>
+          <div class="question-text">${q.text}</div>
+          <div class="question-time">${new Date(q.timestamp).toLocaleTimeString()}</div>
+        </div>
+      `).join('');
+    }
+    
+    // 清空日志
+    function clearLog() {
+      document.getElementById('log').innerHTML = '';
+      log('日志已清空');
+    }
+    
+    // 页面加载时初始化
+    window.addEventListener('load', () => {
+      log('页面加载完成，开始测试豆包平台重复问题预防功能');
+      updateStatus('准备测试豆包平台重复问题预防功能', 'info');
+    });
+    
+    // 页面卸载前保存状态
+    window.addEventListener('beforeunload', () => {
+      log('页面即将卸载');
+    });
+  </script>
+</body>
+</html>
